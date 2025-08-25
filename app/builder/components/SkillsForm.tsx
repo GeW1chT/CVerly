@@ -1,4 +1,3 @@
-// app/builder/components/SkillsForm.tsx
 "use client"
 
 import React, { useState } from 'react';
@@ -162,7 +161,7 @@ export default function SkillsForm({ skills = [], onUpdate }: SkillsFormProps) {
           color: '#6b7280',
           fontSize: '0.875rem'
         }}>
-          Profesyonel becerilerinizi ve seviyelerinizi ekleyerek CV'nizde öne çıkın
+          Profesyonel becerilerinizi ve seviyelerinizi ekleyerek CV&apos;nizde öne çıkın
         </p>
       </div>
 

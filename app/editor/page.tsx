@@ -101,7 +101,7 @@ function CVEditor() {
 
   // Kişisel bilgi güncelleme
   const updatePersonalInfo = (field: string, value: string) => {
-    setCvData(prev => ({
+    setCvData((prev: any) => ({
       ...prev,
       personalInfo: {
         ...prev.personalInfo,
@@ -119,7 +119,7 @@ function CVEditor() {
       period: '',
       description: ''
     };
-    setCvData(prev => ({
+    setCvData((prev: any) => ({
       ...prev,
       experience: [...prev.experience, newExp]
     }));
@@ -127,17 +127,17 @@ function CVEditor() {
 
   // Deneyim silme
   const removeExperience = (id: string) => {
-    setCvData(prev => ({
+    setCvData((prev: any) => ({
       ...prev,
-      experience: prev.experience.filter(exp => exp.id !== id)
+      experience: prev.experience.filter((exp: any) => exp.id !== id)
     }));
   };
 
   // Deneyim güncelleme
   const updateExperience = (id: string, field: string, value: string) => {
-    setCvData(prev => ({
+    setCvData((prev: any) => ({
       ...prev,
-      experience: prev.experience.map(exp => 
+      experience: prev.experience.map((exp: any) => 
         exp.id === id ? { ...exp, [field]: value } : exp
       )
     }));
@@ -151,7 +151,7 @@ function CVEditor() {
       school: '',
       period: ''
     };
-    setCvData(prev => ({
+    setCvData((prev: any) => ({
       ...prev,
       education: [...prev.education, newEdu]
     }));
@@ -159,17 +159,17 @@ function CVEditor() {
 
   // Eğitim silme
   const removeEducation = (id: string) => {
-    setCvData(prev => ({
+    setCvData((prev: any) => ({
       ...prev,
-      education: prev.education.filter(edu => edu.id !== id)
+      education: prev.education.filter((edu: any) => edu.id !== id)
     }));
   };
 
   // Eğitim güncelleme
   const updateEducation = (id: string, field: string, value: string) => {
-    setCvData(prev => ({
+    setCvData((prev: any) => ({
       ...prev,
-      education: prev.education.map(edu => 
+      education: prev.education.map((edu: any) => 
         edu.id === id ? { ...edu, [field]: value } : edu
       )
     }));
@@ -177,7 +177,7 @@ function CVEditor() {
 
   // Yetenek ekleme
   const addSkill = () => {
-    setCvData(prev => ({
+    setCvData((prev: any) => ({
       ...prev,
       skills: [...prev.skills, '']
     }));
@@ -185,17 +185,17 @@ function CVEditor() {
 
   // Yetenek güncelleme
   const updateSkill = (index: number, value: string) => {
-    setCvData(prev => ({
+    setCvData((prev: any) => ({
       ...prev,
-      skills: prev.skills.map((skill, i) => i === index ? value : skill)
+      skills: prev.skills.map((skill: any, i: any) => i === index ? value : skill)
     }));
   };
 
   // Yetenek silme
   const removeSkill = (index: number) => {
-    setCvData(prev => ({
+    setCvData((prev: any) => ({
       ...prev,
-      skills: prev.skills.filter((_, i) => i !== index)
+      skills: prev.skills.filter((_: any, i: number) => i !== index)
     }));
   };
 
@@ -264,7 +264,7 @@ function CVEditor() {
       
       // Dashboard'a yönlendir (isteğe bağlı)
       // setTimeout(() => {
-      //   window.location.href = '/dashboard';
+      //   window.location.href = '/dashboard';
       // }, 2000);
       
     } catch (error) {
@@ -476,10 +476,10 @@ function CVEditor() {
               <h2 style={{ 
                 fontSize: '1.5rem', 
                 fontWeight: '700', 
-                color: '#1f2937', 
                 margin: 0,
                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
                 color: 'transparent'
               }}>
                 Kişisel Bilgiler
@@ -677,7 +677,7 @@ function CVEditor() {
             </label>
             <textarea
               value={cvData.summary}
-              onChange={(e) => setCvData(prev => ({ ...prev, summary: e.target.value }))}
+              onChange={(e) => setCvData((prev: any) => ({ ...prev, summary: e.target.value }))}
               style={{
                 width: '100%',
                 padding: '1.25rem',
@@ -781,7 +781,7 @@ function CVEditor() {
             </button>
           </div>
           
-          {cvData.experience.map((exp, index) => (
+          {cvData.experience.map((exp: any, index: any) => (
             <div key={exp.id} style={{ 
               border: '2px solid rgba(229, 231, 235, 0.8)', 
               borderRadius: '16px', 
@@ -1047,7 +1047,7 @@ function CVEditor() {
             </button>
           </div>
           
-          {cvData.education.map((edu, index) => (
+          {cvData.education.map((edu: any, index: any) => (
             <div key={edu.id} style={{ 
               border: '2px solid rgba(229, 231, 235, 0.8)', 
               borderRadius: '16px', 
@@ -1236,7 +1236,7 @@ function CVEditor() {
           </div>
           
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
-            {cvData.skills.map((skill, index) => (
+            {cvData.skills.map((skill: any, index: any) => (
               <div key={index} style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                 <input
                   type="text"
