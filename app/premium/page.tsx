@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation'; // useRouter'ı import ediyoruz
+import { useRouter } from 'next/navigation';
 import { 
   Crown, 
   Check, 
@@ -15,20 +15,17 @@ import {
   Zap,
   Users,
   BarChart3,
-  Mail,
   Star,
   ArrowRight,
   Sparkles
 } from 'lucide-react';
 
-// Fonksiyonel bileşeni tanımlarken, type'ları belirtmek best practice'dir.
 type PlanType = 'monthly' | 'yearly';
 
 const PremiumPage = () => {
   const [isYearly, setIsYearly] = useState<boolean>(true);
-  const router = useRouter(); // useRouter hook'unu kullanıyoruz
+  const router = useRouter();
 
-  // Yönlendirme işlemini yapacak fonksiyon
   const handleUpgradeClick = () => {
     router.push('/pricing');
   };
@@ -81,7 +78,7 @@ const PremiumPage = () => {
   const plans = [
     {
       name: "Ücretsiz",
-      price: 0, // Fiyatı number olarak belirledik
+      price: 0,
       period: "ay",
       description: "Başlamak için ideal",
       features: [
@@ -99,7 +96,7 @@ const PremiumPage = () => {
       name: "Premium",
       price: isYearly ? 199 : 29,
       period: isYearly ? "yıl" : "ay",
-      originalPrice: isYearly ? 348 : null, // Orijinal fiyatı number olarak belirledik
+      originalPrice: isYearly ? 348 : null,
       description: "Profesyoneller için",
       features: [
         "Sınırsız CV oluşturma",
@@ -195,7 +192,7 @@ const PremiumPage = () => {
               lineHeight: '1.6'
             }}>
               50+ özel şablon, AI optimizasyon ve gelişmiş özelliklerle 
-              profesyonel CV'ler oluşturun. İlk 7 gün ücretsiz deneyin.
+              profesyonel CV&apos;ler oluşturun. İlk 7 gün ücretsiz deneyin.
             </p>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
               <Link href="#pricing" className="btn btn-lg" style={{ 
@@ -223,7 +220,7 @@ const PremiumPage = () => {
               opacity: 0.8, 
               marginTop: '1rem' 
             }}>
-              💳 Kredi kartı gerekmez • ⏱️ 30 saniyede başlayın • 🔒 İstediğiniz zaman iptal edin
+              💳 Kredi kartı gerekmez &bull; ⏱️ 30 saniyede başlayın &bull; 🔒 İstediğiniz zaman iptal edin
             </p>
           </div>
         </div>
@@ -482,13 +479,12 @@ const PremiumPage = () => {
                 </ul>
 
                 <button 
-                  onClick={handleUpgradeClick} // Yönlendirme fonksiyonunu buraya ekledik
+                  onClick={handleUpgradeClick}
                   className={`btn btn-lg ${plan.buttonStyle}`} 
                   style={{
                     width: '100%',
                     fontSize: '1rem',
                     fontWeight: '600',
-                    // Stil düzenlemeleri
                     backgroundColor: plan.buttonStyle === 'btn-primary' ? '#667eea' : 'transparent',
                     color: plan.buttonStyle === 'btn-primary' ? 'white' : '#667eea',
                     border: plan.buttonStyle === 'btn-outline' ? '1px solid #667eea' : 'none',
@@ -544,7 +540,7 @@ const PremiumPage = () => {
                   color: '#374151',
                   lineHeight: '1.6'
                 }}>
-                  "{testimonial.content}"
+                  &quot;{testimonial.content}&quot;
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
                   <div style={{
@@ -636,12 +632,12 @@ const PremiumPage = () => {
               opacity: 0.9, 
               marginBottom: '2rem' 
             }}>
-              7 gün ücretsiz deneme ile Premium'un tüm özelliklerini keşfedin. 
+              7 gün ücretsiz deneme ile Premium&apos;un tüm özelliklerini keşfedin. 
               Kredi kartı gerekmez, istediğiniz zaman iptal edebilirsiniz.
             </p>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button 
-                onClick={handleUpgradeClick} // Yönlendirme fonksiyonunu buraya ekledik
+                onClick={handleUpgradeClick}
                 className="btn btn-lg" 
                 style={{ 
                   backgroundColor: '#fbbf24', 
@@ -651,7 +647,7 @@ const PremiumPage = () => {
                 }}
               >
                 <Crown style={{ width: '1.25rem', height: '1.25rem' }} />
-                Şimdi Premium'a Geç
+                Şimdi Premium&apos;a Geç
               </button>
               <Link href="/builder" className="btn btn-lg" style={{ 
                 backgroundColor: 'rgba(255, 255, 255, 0.2)',
@@ -669,7 +665,7 @@ const PremiumPage = () => {
               opacity: 0.8, 
               marginTop: '1.5rem' 
             }}>
-              30 gün para iade garantisi • 24/7 destek • SSL güvenlik
+              30 gün para iade garantisi &bull; 24/7 destek &bull; SSL güvenlik
             </p>
           </div>
         </div>

@@ -252,7 +252,7 @@ export default function SavedCVsManager({
               marginBottom: '1rem',
               color: '#1f2937'
             }}>
-              CV'nizi Kaydedin
+              CV&apos;nizi Kaydedin
             </h3>
             
             <div style={{ marginBottom: '1.5rem' }}>
@@ -357,13 +357,13 @@ export default function SavedCVsManager({
                   color: '#1f2937',
                   marginBottom: '0.25rem'
                 }}>
-                  Kaydedilen CV'ler ({savedCVs.length})
+                  Kaydedilen CV&apos;ler ({savedCVs.length})
                 </h3>
                 <p style={{
                   fontSize: '0.875rem',
                   color: '#6b7280'
                 }}>
-                  CV'lerinizi yönetin, yükleyin ve organize edin
+                  CV&apos;lerinizi yönetin, yükleyin ve organize edin
                 </p>
               </div>
 
@@ -417,7 +417,7 @@ export default function SavedCVsManager({
               }}>
                 <div style={{
                   background: storageUsage.percentage > 80 ? '#ef4444' : 
-                           storageUsage.percentage > 60 ? '#f59e0b' : '#10b981',
+                               storageUsage.percentage > 60 ? '#f59e0b' : '#10b981',
                   height: '100%',
                   width: `${Math.min(storageUsage.percentage, 100)}%`,
                   transition: 'all 0.3s'
@@ -472,7 +472,7 @@ export default function SavedCVsManager({
                   }} />
                   <p style={{ marginBottom: '0.5rem' }}>Henüz kaydedilen CV yok</p>
                   <p style={{ fontSize: '0.875rem' }}>
-                    İlk CV'nizi kaydetmek için "Kaydet" butonunu kullanın
+                    İlk CV&apos;nizi kaydetmek için &quot;Kaydet&quot; butonunu kullanın
                   </p>
                 </div>
               ) : (
@@ -815,7 +815,7 @@ export default function SavedCVsManager({
               marginBottom: '0.5rem',
               color: '#1f2937'
             }}>
-              CV'yi Sil
+              CV&apos;yi Sil
             </h3>
 
             <p style={{
@@ -823,7 +823,7 @@ export default function SavedCVsManager({
               color: '#6b7280',
               marginBottom: '1.5rem'
             }}>
-              Bu CV'yi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
+              Bu CV&apos;yi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
             </p>
 
             <div style={{
@@ -846,7 +846,7 @@ export default function SavedCVsManager({
                 İptal
               </button>
               <button
-                onClick={() => handleDeleteCV(showDeleteConfirm)}
+                onClick={() => handleDeleteCV(showDeleteConfirm as string)}
                 style={{
                   padding: '0.75rem 1.5rem',
                   background: '#dc2626',

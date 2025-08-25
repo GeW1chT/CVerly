@@ -1,3 +1,4 @@
+// app/builder/page.tsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -6,8 +7,64 @@ import SkillsForm from './components/SkillsForm';
 import SavedCVsManager from '@/components/SavedCVsManager';
 import { CVStorage } from '@/lib/storage';
 
-const PersonalInfoStep = ({ data, onUpdate, onNext }: any) => {
-  const [formData, setFormData] = useState(data || {
+// CV Veri Yapısını Tanımlayan Interface'ler
+interface PersonalInfo {
+  firstName: string;
+  lastName: string;
+  title: string;
+  email: string;
+  phone: string;
+  location: string;
+  summary: string;
+}
+
+interface Experience {
+  id: string;
+  company: string;
+  position: string;
+  startDate: string;
+  endDate: string;
+  current: boolean;
+  description: string;
+  location: string;
+}
+
+interface Education {
+  id: string;
+  institution: string;
+  degree: string;
+  field: string;
+  startDate: string;
+  endDate: string;
+  current: boolean;
+  gpa: string;
+  achievements: string;
+}
+
+interface Skill {
+  name: string;
+  level: number;
+}
+
+// CVStorage'ın beklediği ana CVData tipi
+interface FullCVData {
+  personalInfo: PersonalInfo | null;
+  experience: Experience[];
+  education: Education[];
+  skills: Skill[];
+  lastModified?: string;
+  version?: string;
+}
+
+interface StepProps {
+  data: any; // Bu alt bileşenler için şimdilik 'any' bırakıyorum, çünkü veri tipleri duruma göre değişiyor.
+  onUpdate: (data: any) => void;
+  onNext: () => void;
+  onPrev: () => void;
+}
+
+const PersonalInfoStep = ({ data, onUpdate, onNext }: Omit<StepProps, 'onPrev'>) => {
+  const [formData, setFormData] = useState<PersonalInfo>(data || {
     firstName: '',
     lastName: '',
     title: '',
@@ -31,7 +88,7 @@ const PersonalInfoStep = ({ data, onUpdate, onNext }: any) => {
           Kişisel Bilgiler
         </h2>
         <p className="card-description">
-          CV'nizin temelini oluşturacak kişisel bilgilerinizi girin.
+          CV&apos;nizin temelini oluşturacak kişisel bilgilerinizi girin.
         </p>
       </div>
       <div className="card-content">
@@ -137,9 +194,9 @@ const PersonalInfoStep = ({ data, onUpdate, onNext }: any) => {
   );
 };
 
-const ExperienceStep = ({ data, onUpdate, onNext, onPrev }: any) => {
-  const [experiences, setExperiences] = useState(data || []);
-  const [currentExp, setCurrentExp] = useState({
+const ExperienceStep = ({ data, onUpdate, onNext, onPrev }: StepProps) => {
+  const [experiences, setExperiences] = useState<Experience[]>(data || []);
+  const [currentExp, setCurrentExp] = useState<Omit<Experience, 'id'>>({
     company: '',
     position: '',
     startDate: '',
@@ -165,7 +222,7 @@ const ExperienceStep = ({ data, onUpdate, onNext, onPrev }: any) => {
   };
 
   const removeExperience = (index: number) => {
-    setExperiences(experiences.filter((_: any, i: number) => i !== index));
+    setExperiences(experiences.filter((_: Experience, i: number) => i !== index));
   };
 
   const handleNext = () => {
@@ -189,7 +246,7 @@ const ExperienceStep = ({ data, onUpdate, onNext, onPrev }: any) => {
           {experiences.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <h3 className="text-lg font-semibold">Eklenen Deneyimler ({experiences.length})</h3>
-              {experiences.map((exp: any, index: number) => (
+              {experiences.map((exp: Experience, index: number) => (
                 <div key={index} className="experience-item">
                   <div className="experience-header">
                     <div>
@@ -338,9 +395,9 @@ const ExperienceStep = ({ data, onUpdate, onNext, onPrev }: any) => {
   );
 };
 
-const EducationStep = ({ data, onUpdate, onNext, onPrev }: any) => {
-  const [education, setEducation] = useState(data || []);
-  const [currentEdu, setCurrentEdu] = useState({
+const EducationStep = ({ data, onUpdate, onNext, onPrev }: StepProps) => {
+  const [education, setEducation] = useState<Education[]>(data || []);
+  const [currentEdu, setCurrentEdu] = useState<Omit<Education, 'id'>>({
     institution: '',
     degree: '',
     field: '',
@@ -368,7 +425,7 @@ const EducationStep = ({ data, onUpdate, onNext, onPrev }: any) => {
   };
 
   const removeEducation = (index: number) => {
-    setEducation(education.filter((_: any, i: number) => i !== index));
+    setEducation(education.filter((_: Education, i: number) => i !== index));
   };
 
   const handleNext = () => {
@@ -392,7 +449,7 @@ const EducationStep = ({ data, onUpdate, onNext, onPrev }: any) => {
           {education.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <h3 className="text-lg font-semibold">Eklenen Eğitimler ({education.length})</h3>
-              {education.map((edu: any, index: number) => (
+              {education.map((edu: Education, index: number) => (
                 <div key={index} className="experience-item">
                   <div className="experience-header">
                     <div>
@@ -560,7 +617,7 @@ const EducationStep = ({ data, onUpdate, onNext, onPrev }: any) => {
   );
 };
 
-const SkillsStep = ({ data, onUpdate, onNext, onPrev }: any) => {
+const SkillsStep = ({ data, onUpdate, onNext, onPrev }: StepProps) => {
   const handleNext = () => {
     onNext();
   };
@@ -588,7 +645,7 @@ const SkillsStep = ({ data, onUpdate, onNext, onPrev }: any) => {
   );
 };
 
-const PreviewStep = ({ cvData, onPrev }: { cvData: any, onPrev: () => void }) => {
+const PreviewStep = ({ cvData, onPrev }: { cvData: FullCVData, onPrev: () => void }) => {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const downloadPDF = async () => {
@@ -600,7 +657,7 @@ const PreviewStep = ({ cvData, onPrev }: { cvData: any, onPrev: () => void }) =>
         return;
       }
 
-      const generateSimplePDF = (cvData: any): void => {
+      const generateSimplePDF = (cvData: FullCVData): void => {
         const { personalInfo, experience, education, skills } = cvData;
         
         const htmlContent = `
@@ -722,7 +779,7 @@ const PreviewStep = ({ cvData, onPrev }: { cvData: any, onPrev: () => void }) =>
               ${experience && experience.length > 0 ? `
                 <div class="section">
                   <h2 class="section-title">İŞ DENEYİMİ</h2>
-                  ${experience.map((exp: any) => `
+                  ${experience.map((exp: Experience) => `
                     <div class="experience-item">
                       <div class="experience-header">
                         <div>
@@ -742,7 +799,7 @@ const PreviewStep = ({ cvData, onPrev }: { cvData: any, onPrev: () => void }) =>
               ${education && education.length > 0 ? `
                 <div class="section">
                   <h2 class="section-title">EĞİTİM</h2>
-                  ${education.map((edu: any) => `
+                  ${education.map((edu: Education) => `
                     <div class="experience-item">
                       <div class="experience-header">
                         <div>
@@ -814,7 +871,7 @@ const PreviewStep = ({ cvData, onPrev }: { cvData: any, onPrev: () => void }) =>
           CV Önizleme
         </h2>
         <p className="card-description">
-          CV'nizin son halini kontrol edin ve PDF olarak indirin.
+          CV&apos;nizin son halini kontrol edin ve PDF olarak indirin.
         </p>
       </div>
       <div className="card-content">
@@ -900,7 +957,7 @@ const PreviewStep = ({ cvData, onPrev }: { cvData: any, onPrev: () => void }) =>
                 }}>
                   İŞ DENEYİMİ
                 </h2>
-                {cvData.experience.map((exp: any, index: number) => (
+                {cvData.experience.map((exp: Experience, index: number) => (
                   <div key={index} style={{
                     marginBottom: '1.5rem',
                     padding: '1rem',
@@ -963,7 +1020,7 @@ const PreviewStep = ({ cvData, onPrev }: { cvData: any, onPrev: () => void }) =>
                 }}>
                   EĞİTİM
                 </h2>
-                {cvData.education.map((edu: any, index: number) => (
+                {cvData.education.map((edu: Education, index: number) => (
                   <div key={index} style={{
                     marginBottom: '1.5rem',
                     padding: '1rem',
@@ -1039,7 +1096,7 @@ const PreviewStep = ({ cvData, onPrev }: { cvData: any, onPrev: () => void }) =>
                   flexWrap: 'wrap',
                   gap: '0.75rem'
                 }}>
-                  {cvData.skills.map((skill: any, index: number) => (
+                  {cvData.skills.map((skill: Skill, index: number) => (
                     <div key={index} style={{
                       background: '#eff6ff',
                       color: '#2563eb',
@@ -1126,7 +1183,7 @@ const PreviewStep = ({ cvData, onPrev }: { cvData: any, onPrev: () => void }) =>
             margin: '0',
             lineHeight: '1.4'
           }}>
-            PDF indir butonuna tıkladığınızda yeni bir pencere açılacak. Bu pencerede tarayıcınızın yazdırma özelliğini kullanarak PDF olarak kaydedebilirsiniz. Chrome'da Ctrl+P (Windows) veya Cmd+P (Mac) tuşlarını kullanın.
+            PDF indir butonuna tıkladığınızda yeni bir pencere açılacak. Bu pencerede tarayıcınızın yazdırma özelliğini kullanarak PDF olarak kaydedebilirsiniz. Chrome&apos;da Ctrl+P (Windows) veya Cmd+P (Mac) tuşlarını kullanın.
           </p>
         </div>
       </div>
@@ -1136,7 +1193,7 @@ const PreviewStep = ({ cvData, onPrev }: { cvData: any, onPrev: () => void }) =>
 
 export default function CVBuilderPage() {
   const [currentStep, setCurrentStep] = useState(0);
-  const [cvData, setCvData] = useState<any>({
+  const [cvData, setCvData] = useState<FullCVData>({
     personalInfo: null,
     experience: [],
     education: [],
@@ -1182,14 +1239,20 @@ export default function CVBuilderPage() {
   // CV verilerinde değişiklik olduğunda otomatik kaydet
   useEffect(() => {
     const hasData = cvData.personalInfo || 
-                     (cvData.experience && cvData.experience.length > 0) || 
-                     (cvData.education && cvData.education.length > 0) || 
-                     (cvData.skills && cvData.skills.length > 0);
+                    (cvData.experience && cvData.experience.length > 0) || 
+                    (cvData.education && cvData.education.length > 0) || 
+                    (cvData.skills && cvData.skills.length > 0);
     
     if (hasData) {
       // Debounce ile 3 saniye sonra otomatik kaydet
       const timer = setTimeout(() => {
-        CVStorage.autoSave(cvData);
+        // Hata çözümü: autoSave'e göndermeden önce gerekli alanları ekle
+        const dataToSave = {
+          ...cvData,
+          lastModified: new Date().toISOString(),
+          version: '1.0' // Uygulamanızın versiyon numarası olabilir
+        };
+        CVStorage.autoSave(dataToSave);
       }, 3000);
 
       setHasUnsavedChanges(true);
@@ -1199,7 +1262,7 @@ export default function CVBuilderPage() {
 
   // Sayfa kapatılırken uyarı
   useEffect(() => {
-    const handleBeforeUnload = (e: any) => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasUnsavedChanges) {
         e.preventDefault();
         e.returnValue = 'Kaydedilmemiş değişiklikler var. Sayfayı kapatmak istediğinizden emin misiniz?';
@@ -1330,7 +1393,7 @@ export default function CVBuilderPage() {
           {currentStep === 0 && (
             <PersonalInfoStep
               data={cvData.personalInfo}
-              onUpdate={(data: any) => updateCVData(data, 'personalInfo')}
+              onUpdate={(data: PersonalInfo) => updateCVData(data, 'personalInfo')}
               onNext={nextStep}
             />
           )}
@@ -1338,7 +1401,7 @@ export default function CVBuilderPage() {
           {currentStep === 1 && (
             <ExperienceStep
               data={cvData.experience}
-              onUpdate={(data: any) => updateCVData(data, 'experience')}
+              onUpdate={(data: Experience[]) => updateCVData(data, 'experience')}
               onNext={nextStep}
               onPrev={prevStep}
             />
@@ -1347,7 +1410,7 @@ export default function CVBuilderPage() {
           {currentStep === 2 && (
             <EducationStep
               data={cvData.education}
-              onUpdate={(data: any) => updateCVData(data, 'education')}
+              onUpdate={(data: Education[]) => updateCVData(data, 'education')}
               onNext={nextStep}
               onPrev={prevStep}
             />
@@ -1356,7 +1419,7 @@ export default function CVBuilderPage() {
           {currentStep === 3 && (
             <SkillsStep
               data={cvData.skills}
-              onUpdate={(data: any) => updateCVData(data, 'skills')}
+              onUpdate={(data: Skill[]) => updateCVData(data, 'skills')}
               onNext={nextStep}
               onPrev={prevStep}
             />
@@ -1423,9 +1486,9 @@ export default function CVBuilderPage() {
           <div className="text-sm text-blue-800">
             <ul style={{ margin: 0, paddingLeft: '1rem' }}>
               <li>Verileriniz otomatik olarak her 3 saniyede kaydedilir</li>
-              <li>Düzenli olarak "Kaydet" butonunu kullanarak manuel yedek alın</li>
-              <li>CV'lerinizi JSON formatında export edebilirsiniz</li>
-              <li>Tarayıcı depolama alanınızı kontrol edin - %80'in üzerinde uyarı verilir</li>
+              <li>Düzenli olarak &quot;Kaydet&quot; butonunu kullanarak manuel yedek alın</li>
+              <li>CV&apos;lerinizi JSON formatında export edebilirsiniz</li>
+              <li>Tarayıcı depolama alanınızı kontrol edin - %80&apos;in üzerinde uyarı verilir</li>
             </ul>
           </div>
         </div>
