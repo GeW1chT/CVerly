@@ -1,1175 +1,1230 @@
-// app/pricing/page.tsx
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { 
-  Check,
-  Crown,
-  Star,
-  Zap,
-  Shield,
-  Download,
-  Palette,
-  FileText,
-  Users,
-  Clock,
   ArrowLeft,
-  CreditCard,
-  Smartphone,
-  Globe
+  User,
+  Bell,
+  Shield,
+  Globe,
+  Palette,
+  Download,
+  Trash2,
+  Save,
+  Eye,
+  EyeOff,
+  Moon,
+  Sun,
+  Mail,
+  Phone,
+  MapPin,
+  Crown
 } from 'lucide-react';
-import { useSettings, useTranslation, getThemeColors } from '../contexts/SettingsContext';
 
-// Plan ve diğer props'lar için tip arayüzleri
-interface Plan {
-  name: string;
-  price: { monthly: number; yearly: number };
-  description: string;
-  features: string[];
-  limitations?: string[];
-  buttonText: string;
-  popular: boolean;
-}
+export default function SettingsPage() {
+  // User settings state
+  const [userSettings, setUserSettings] = useState(() => {
+    // Load from localStorage on first render
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('userSettings');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    }
+    return {
+      profile: {
+        name: 'Ahmet Yılmaz',
+        email: 'ahmet.yilmaz@email.com',
+        phone: '+90 555 123 4567',
+        location: 'İstanbul, Türkiye'
+      },
+      preferences: {
+        theme: 'light',
+        language: 'tr',
+        emailNotifications: true,
+        pushNotifications: false,
+        marketingEmails: true,
+        autoSave: true,
+        showTips: true
+      },
+      privacy: {
+        profileVisibility: 'public',
+        showEmail: false,
+        showPhone: false,
+        allowAnalytics: true
+      }
+    };
+  });
 
-interface Plans {
-  free: Plan;
-  basic: Plan;
-  pro: Plan;
-  enterprise: Plan;
-}
+  const [isSaving, setIsSaving] = useState(false);
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
 
-interface ThemeColors {
-  background: string;
-  textPrimary: string;
-  textSecondary: string;
-  cardBg: string;
-  border: string;
-  inputBg: string;
-}
+  // Apply theme changes immediately
+  React.useEffect(() => {
+    document.documentElement.setAttribute('data-theme', userSettings.preferences.theme);
+    document.documentElement.setAttribute('data-language', userSettings.preferences.language);
+  }, [userSettings.preferences.theme, userSettings.preferences.language]);
 
-interface Settings {
-  preferences: {
-    theme: 'light' | 'dark' | 'system';
-    language: string;
+  // Update functions
+  const updateProfile = (field: string, value: string) => {
+    setUserSettings((prev: typeof userSettings) => ({
+      ...prev,
+      profile: {
+        ...prev.profile,
+        [field]: value
+      }
+    }));
   };
-}
 
-interface PaymentModalProps {
-  show: boolean;
-  onClose: () => void;
-  selectedPremiumPlan: keyof Plans;
-  selectedPlan: 'monthly' | 'yearly';
-  plans: Plans;
-  themeColors: ThemeColors;
-  settings: Settings;
-}
-
-const PaymentModal: React.FC<PaymentModalProps> = ({ 
-  show, 
-  onClose, 
-  selectedPremiumPlan, 
-  selectedPlan, 
-  plans, 
-  themeColors, 
-  settings 
-}) => {
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'mobile' | 'crypto'>('card');
-  const [isProcessing, setIsProcessing] = useState(false);
-  
-  const [modalBillingType, setModalBillingType] = useState(selectedPlan);
-
-  useEffect(() => {
-    setModalBillingType(selectedPlan);
-  }, [selectedPlan]);
-
-  const selectedPlanDetails = plans[selectedPremiumPlan];
-  if (!selectedPlanDetails) {
-    return null;
-  }
-
-  const finalPrice = selectedPlanDetails.price[modalBillingType];
-  const yearlyDiscount = Math.round((selectedPlanDetails.price.monthly * 12 - selectedPlanDetails.price.yearly) / (selectedPlanDetails.price.monthly * 12) * 100);
-
-  const handlePayment = async () => {
-    setIsProcessing(true);
+  const updatePreference = (field: string, value: boolean | string) => {
+    setUserSettings((prev: typeof userSettings) => ({
+      ...prev,
+      preferences: {
+        ...prev.preferences,
+        [field]: value
+      }
+    }));
     
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    // Show immediate feedback for some settings
+    if (field === 'theme') {
+      const themeMsg = value === 'dark' ? 'Koyu tema aktifleştirildi!' : 'Açık tema aktifleştirildi!';
+      showNotification(themeMsg, '#8b5cf6');
+    }
     
+    if (field === 'language') {
+      const langMsg = getLanguageMessage(value as string);
+      showNotification(langMsg, '#3b82f6');
+    }
+  };
+
+  const updatePrivacy = (field: string, value: boolean | string) => {
+    setUserSettings((prev: typeof userSettings) => ({
+      ...prev,
+      privacy: {
+        ...prev.privacy,
+        [field]: value
+      }
+    }));
+  };
+
+  // Language messages
+  const getLanguageMessage = (lang: string) => {
+    const messages = {
+      'tr': 'Dil Türkçe olarak değiştirildi!',
+      'en': 'Language changed to English!',
+      'de': 'Sprache wurde auf Deutsch geändert!',
+      'fr': 'Langue changée en français!'
+    };
+    return messages[lang as keyof typeof messages] || 'Dil değiştirildi!';
+  };
+
+  // Show notification helper
+  const showNotification = (message: string, color: string) => {
     const notification = document.createElement('div');
     notification.style.cssText = `
       position: fixed;
       top: 2rem;
       right: 2rem;
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      background: ${color};
       color: white;
       padding: 1rem 1.5rem;
       border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
       z-index: 1000;
       font-weight: 600;
       font-size: 0.875rem;
+      animation: slideIn 0.3s ease-out;
     `;
     
-    notification.textContent = 'Ödeme başarılı! Premium hesabınız aktifleştirildi.';
+    notification.textContent = message;
     document.body.appendChild(notification);
     
     setTimeout(() => {
       if (notification.parentNode) {
         document.body.removeChild(notification);
       }
-      onClose();
-      setIsProcessing(false);
     }, 2000);
   };
-  
-  if (!show) {
-      return null;
-  }
+
+  // Save settings
+  const handleSave = async () => {
+    setIsSaving(true);
+    
+    try {
+      // Simüle edilmiş kaydetme
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Settings'i localStorage'a kaydet
+      localStorage.setItem('userSettings', JSON.stringify(userSettings));
+      
+      // Success notification
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 2rem;
+        right: 2rem;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        z-index: 1000;
+        font-weight: 600;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      `;
+      
+      notification.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20,6 9,17 4,12"></polyline>
+        </svg>
+        Ayarlar başarıyla kaydedildi!
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification.parentNode) {
+          document.body.removeChild(notification);
+        }
+      }, 3000);
+      
+    } catch (error) {
+      alert('Ayarlar kaydedilirken bir hata oluştu!');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Export data
+  const handleExportData = () => {
+    const dataToExport = {
+      userSettings,
+      exportDate: new Date().toISOString(),
+      version: '1.0'
+    };
+    
+    const element = document.createElement('a');
+    const file = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+    element.href = URL.createObjectURL(file);
+    element.download = `cverly_data_export_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    
+    alert('Verileriniz başarıyla dışa aktarıldı!');
+  };
+
+  // Delete account
+  const handleDeleteAccount = () => {
+    if (confirm('Hesabınızı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!')) {
+      // Simüle edilmiş hesap silme
+      alert('Hesap silme işlemi başlatıldı. E-postanızı kontrol edin.');
+      setShowDeleteAccount(false);
+    }
+  };
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-      padding: '1rem'
+    <div style={{ 
+      minHeight: '100vh', 
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      position: 'relative'
     }}>
+      {/* Animated Background */}
       <div style={{
-        backgroundColor: themeColors.cardBg,
-        borderRadius: '20px',
-        padding: '2rem',
-        maxWidth: '500px',
-        width: '100%',
-        maxHeight: '90vh',
-        overflowY: 'auto',
-        boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)',
-        backdropFilter: 'blur(20px)'
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="white" fill-opacity="0.03"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/svg%3E")',
+        opacity: 0.1
+      }} />
+      
+      {/* Header */}
+      <div style={{ 
+        background: 'rgba(255, 255, 255, 0.95)', 
+        backdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.2)', 
+        padding: '1rem 0',
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
       }}>
-        {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-          <div>
-            <h3 style={{ 
-              fontSize: '1.5rem', 
-              fontWeight: '700', 
-              color: themeColors.textPrimary, 
-              margin: '0 0 0.5rem 0' 
-            }}>
-              Ödeme Bilgileri
-            </h3>
-            <p style={{ 
-              fontSize: '0.875rem', 
-              color: themeColors.textSecondary, 
-              margin: 0 
-            }}>
-              {selectedPlanDetails.name} planını satın alın
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            style={{
-              padding: '0.5rem',
-              background: 'transparent',
-              border: 'none',
-              color: themeColors.textSecondary,
-              cursor: 'pointer',
-              fontSize: '1.5rem'
-            }}
-          >
-            ×
-          </button>
-        </div>
-
-        {/* Plan Summary */}
-        <div style={{
-          background: settings.preferences.theme === 'dark' ? 'rgba(55, 65, 81, 0.5)' : 'rgba(249, 250, 251, 0.8)',
-          padding: '1.5rem',
-          borderRadius: '12px',
-          marginBottom: '2rem',
-          border: `1px solid ${themeColors.border}`
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <div>
-              <div style={{ 
-                fontSize: '1.125rem', 
-                fontWeight: '600', 
-                color: themeColors.textPrimary 
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+              <Link href="/dashboard" style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.5rem',
+                color: '#6b7280',
+                textDecoration: 'none',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                padding: '0.5rem 1rem',
+                borderRadius: '50px',
+                background: 'rgba(107, 114, 128, 0.1)',
+                transition: 'all 0.3s ease'
               }}>
-                {selectedPlanDetails.name}
-              </div>
-              <div style={{ 
-                fontSize: '0.875rem', 
-                color: themeColors.textSecondary 
-              }}>
-                {modalBillingType === 'yearly' ? 'Yıllık Plan' : 'Aylık Plan'}
-              </div>
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ 
-                fontSize: '1.5rem', 
-                fontWeight: '700', 
-                color: themeColors.textPrimary 
-              }}>
-                ₺{finalPrice}
-              </div>
-              {modalBillingType === 'yearly' && (
-                <div style={{ 
-                  fontSize: '0.75rem', 
-                  color: '#10b981',
+                <ArrowLeft style={{ width: '1rem', height: '1rem' }} />
+                Dashboard'a Dön
+              </Link>
+              
+              <div style={{ height: '2rem', width: '1px', background: 'rgba(0,0,0,0.1)' }} />
+              
+              <div>
+                <h1 style={{ 
+                  fontSize: '1.75rem', 
+                  fontWeight: '700', 
+                  color: '#1f2937',
+                  margin: 0 
+                }}>
+                  Ayarlar
+                </h1>
+                <p style={{ 
+                  fontSize: '0.875rem', 
+                  color: '#6b7280', 
+                  margin: '0.25rem 0 0 0',
                   fontWeight: '500'
                 }}>
-                  %{yearlyDiscount} tasarruf
+                  Hesap ve uygulama ayarlarınızı yönetin
+                </p>
+              </div>
+            </div>
+            
+            <button 
+              onClick={handleSave}
+              disabled={isSaving}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.875rem 1.75rem',
+                background: isSaving ? 'rgba(156, 163, 175, 0.8)' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                border: 'none',
+                borderRadius: '50px',
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                color: 'white',
+                cursor: isSaving ? 'not-allowed' : 'pointer',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)'
+              }}
+            >
+              <Save style={{ 
+                width: '1.125rem', 
+                height: '1.125rem',
+                animation: isSaving ? 'spin 1s linear infinite' : 'none'
+              }} />
+              {isSaving ? 'Kaydediliyor...' : 'Ayarları Kaydet'}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div style={{ 
+        maxWidth: '1000px', 
+        margin: '0 auto', 
+        padding: '2rem 1rem',
+        position: 'relative',
+        zIndex: 1
+      }}>
+
+        {/* Profile Settings */}
+        <div style={{ 
+          background: 'rgba(255, 255, 255, 0.95)', 
+          backdropFilter: 'blur(20px)',
+          borderRadius: '20px', 
+          padding: '2.5rem', 
+          marginBottom: '2rem',
+          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
+          border: '1px solid rgba(255, 255, 255, 0.2)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+            <div style={{
+              width: '60px',
+              height: '60px',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
+            }}>
+              <User style={{ width: '1.5rem', height: '1.5rem', color: 'white' }} />
+            </div>
+            <div>
+              <h2 style={{ 
+                fontSize: '1.5rem', 
+                fontWeight: '700', 
+                color: '#1f2937', 
+                margin: 0 
+              }}>
+                Profil Bilgileri
+              </h2>
+              <p style={{ 
+                fontSize: '0.875rem', 
+                color: '#6b7280', 
+                margin: '0.25rem 0 0 0',
+                fontWeight: '500'
+              }}>
+                Kişisel bilgilerinizi güncelleyin
+              </p>
+            </div>
+          </div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+            <div>
+              <label style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontSize: '0.875rem', 
+                fontWeight: '600', 
+                color: '#374151', 
+                marginBottom: '0.75rem'
+              }}>
+                <User style={{ width: '1rem', height: '1rem' }} />
+                Ad Soyad
+              </label>
+              <input
+                type="text"
+                value={userSettings.profile.name}
+                onChange={(e) => updateProfile('name', e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '1rem 1.25rem',
+                  border: '2px solid transparent',
+                  borderRadius: '12px',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  background: 'rgba(249, 250, 251, 0.8)',
+                  transition: 'all 0.3s ease',
+                  outline: 'none'
+                }}
+              />
+            </div>
+            
+            <div>
+              <label style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontSize: '0.875rem', 
+                fontWeight: '600', 
+                color: '#374151', 
+                marginBottom: '0.75rem'
+              }}>
+                <Mail style={{ width: '1rem', height: '1rem' }} />
+                E-posta
+              </label>
+              <input
+                type="email"
+                value={userSettings.profile.email}
+                onChange={(e) => updateProfile('email', e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '1rem 1.25rem',
+                  border: '2px solid transparent',
+                  borderRadius: '12px',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  background: 'rgba(249, 250, 251, 0.8)',
+                  transition: 'all 0.3s ease',
+                  outline: 'none'
+                }}
+              />
+            </div>
+            
+            <div>
+              <label style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontSize: '0.875rem', 
+                fontWeight: '600', 
+                color: '#374151', 
+                marginBottom: '0.75rem'
+              }}>
+                <Phone style={{ width: '1rem', height: '1rem' }} />
+                Telefon
+              </label>
+              <input
+                type="tel"
+                value={userSettings.profile.phone}
+                onChange={(e) => updateProfile('phone', e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '1rem 1.25rem',
+                  border: '2px solid transparent',
+                  borderRadius: '12px',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  background: 'rgba(249, 250, 251, 0.8)',
+                  transition: 'all 0.3s ease',
+                  outline: 'none'
+                }}
+              />
+            </div>
+            
+            <div>
+              <label style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontSize: '0.875rem', 
+                fontWeight: '600', 
+                color: '#374151', 
+                marginBottom: '0.75rem'
+              }}>
+                <MapPin style={{ width: '1rem', height: '1rem' }} />
+                Konum
+              </label>
+              <input
+                type="text"
+                value={userSettings.profile.location}
+                onChange={(e) => updateProfile('location', e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '1rem 1.25rem',
+                  border: '2px solid transparent',
+                  borderRadius: '12px',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  background: 'rgba(249, 250, 251, 0.8)',
+                  transition: 'all 0.3s ease',
+                  outline: 'none'
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* App Preferences */}
+        <div style={{ 
+          background: userSettings.preferences.theme === 'dark' 
+            ? 'rgba(31, 41, 55, 0.95)' 
+            : 'rgba(255, 255, 255, 0.95)', 
+          backdropFilter: 'blur(20px)',
+          borderRadius: '20px', 
+          padding: '2.5rem', 
+          marginBottom: '2rem',
+          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          transition: 'all 0.3s ease'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+            <div style={{
+              width: '60px',
+              height: '60px',
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 10px 30px rgba(16, 185, 129, 0.3)'
+            }}>
+              <Palette style={{ width: '1.5rem', height: '1.5rem', color: 'white' }} />
+            </div>
+            <div>
+              <h2 style={{ 
+                fontSize: '1.5rem', 
+                fontWeight: '700', 
+                color: userSettings.preferences.theme === 'dark' ? '#f9fafb' : '#1f2937', 
+                margin: 0 
+              }}>
+                Uygulama Tercihleri
+              </h2>
+              <p style={{ 
+                fontSize: '0.875rem', 
+                color: userSettings.preferences.theme === 'dark' ? '#d1d5db' : '#6b7280', 
+                margin: '0.25rem 0 0 0',
+                fontWeight: '500'
+              }}>
+                Uygulama deneyiminizi kişiselleştirin
+              </p>
+            </div>
+          </div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
+            {/* Theme Selection */}
+            <div>
+              <label style={{ 
+                fontSize: '0.875rem', 
+                fontWeight: '600', 
+                color: userSettings.preferences.theme === 'dark' ? '#f9fafb' : '#374151', 
+                marginBottom: '1rem',
+                display: 'block'
+              }}>
+                Tema Seçimi
+              </label>
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                {[
+                  { value: 'light', label: 'Açık', icon: Sun },
+                  { value: 'dark', label: 'Koyu', icon: Moon }
+                ].map((theme) => {
+                  const Icon = theme.icon;
+                  const isSelected = userSettings.preferences.theme === theme.value;
+                  return (
+                    <button
+                      key={theme.value}
+                      onClick={() => updatePreference('theme', theme.value)}
+                      style={{
+                        flex: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                        padding: '1.25rem',
+                        border: `2px solid ${isSelected ? '#10b981' : 'rgba(229, 231, 235, 0.8)'}`,
+                        borderRadius: '12px',
+                        background: isSelected 
+                          ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%)' 
+                          : (userSettings.preferences.theme === 'dark' ? 'rgba(55, 65, 81, 0.5)' : 'rgba(249, 250, 251, 0.8)'),
+                        color: isSelected ? '#059669' : (userSettings.preferences.theme === 'dark' ? '#d1d5db' : '#6b7280'),
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        fontSize: '0.875rem',
+                        fontWeight: '600',
+                        transform: isSelected ? 'scale(1.02)' : 'scale(1)',
+                        boxShadow: isSelected ? '0 8px 25px rgba(16, 185, 129, 0.2)' : 'none'
+                      }}
+                      onMouseOver={(e) => {
+                        if (!isSelected) {
+                          e.currentTarget.style.transform = 'scale(1.02)';
+                          e.currentTarget.style.borderColor = '#10b981';
+                        }
+                      }}
+                      onMouseOut={(e) => {
+                        if (!isSelected) {
+                          e.currentTarget.style.transform = 'scale(1)';
+                          e.currentTarget.style.borderColor = 'rgba(229, 231, 235, 0.8)';
+                        }
+                      }}
+                    >
+                      <Icon style={{ width: '1.25rem', height: '1.25rem' }} />
+                      {theme.label} Tema
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Language Selection */}
+            <div>
+              <label style={{ 
+                fontSize: '0.875rem', 
+                fontWeight: '600', 
+                color: userSettings.preferences.theme === 'dark' ? '#f9fafb' : '#374151', 
+                marginBottom: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <Globe style={{ width: '1rem', height: '1rem' }} />
+                Dil Seçimi
+              </label>
+              <div style={{ position: 'relative' }}>
+                <select
+                  value={userSettings.preferences.language}
+                  onChange={(e) => updatePreference('language', e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '1.25rem',
+                    border: '2px solid transparent',
+                    borderRadius: '12px',
+                    fontSize: '0.875rem',
+                    fontWeight: '600',
+                    background: userSettings.preferences.theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(249, 250, 251, 0.8)',
+                    color: userSettings.preferences.theme === 'dark' ? '#f9fafb' : '#374151',
+                    transition: 'all 0.3s ease',
+                    outline: 'none',
+                    cursor: 'pointer',
+                    appearance: 'none',
+                    backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6,9 12,15 18,9\'%3e%3c/polyline%3e%3c/svg%3e")',
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'right 1rem center',
+                    backgroundSize: '1rem',
+                    paddingRight: '3rem'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#3b82f6';
+                    e.target.style.background = userSettings.preferences.theme === 'dark' ? 'rgba(31, 41, 55, 0.9)' : 'white';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = 'transparent';
+                    e.target.style.background = userSettings.preferences.theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(249, 250, 251, 0.8)';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                >
+                  <option value="tr">🇹🇷 Türkçe</option>
+                  <option value="en">🇺🇸 English</option>
+                  <option value="de">🇩🇪 Deutsch</option>
+                  <option value="fr">🇫🇷 Français</option>
+                  <option value="es">🇪🇸 Español</option>
+                  <option value="it">🇮🇹 Italiano</option>
+                </select>
+              </div>
+              
+              {/* Language preview */}
+              <div style={{
+                marginTop: '0.75rem',
+                padding: '0.75rem',
+                background: userSettings.preferences.theme === 'dark' ? 'rgba(17, 24, 39, 0.5)' : 'rgba(239, 246, 255, 0.8)',
+                borderRadius: '8px',
+                fontSize: '0.75rem',
+                color: userSettings.preferences.theme === 'dark' ? '#d1d5db' : '#6b7280',
+                fontStyle: 'italic'
+              }}>
+                Önizleme: {
+                  userSettings.preferences.language === 'tr' ? 'CV oluşturucu uygulaması' :
+                  userSettings.preferences.language === 'en' ? 'CV builder application' :
+                  userSettings.preferences.language === 'de' ? 'Lebenslauf-Builder-Anwendung' :
+                  userSettings.preferences.language === 'fr' ? 'Application de création de CV' :
+                  userSettings.preferences.language === 'es' ? 'Aplicación creadora de CV' :
+                  'Applicazione per creare CV'
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Notifications */}
+        <div style={{ 
+          background: 'rgba(255, 255, 255, 0.95)', 
+          backdropFilter: 'blur(20px)',
+          borderRadius: '20px', 
+          padding: '2.5rem', 
+          marginBottom: '2rem',
+          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
+          border: '1px solid rgba(255, 255, 255, 0.2)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+            <div style={{
+              width: '60px',
+              height: '60px',
+              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 10px 30px rgba(245, 158, 11, 0.3)'
+            }}>
+              <Bell style={{ width: '1.5rem', height: '1.5rem', color: 'white' }} />
+            </div>
+            <div>
+              <h2 style={{ 
+                fontSize: '1.5rem', 
+                fontWeight: '700', 
+                color: '#1f2937', 
+                margin: 0 
+              }}>
+                Bildirimler
+              </h2>
+              <p style={{ 
+                fontSize: '0.875rem', 
+                color: '#6b7280', 
+                margin: '0.25rem 0 0 0',
+                fontWeight: '500'
+              }}>
+                Bildirim tercihlerinizi yönetin
+              </p>
+            </div>
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {[
+              { key: 'emailNotifications', label: 'E-posta Bildirimleri', desc: 'Önemli güncellemeler için e-posta alın' },
+              { key: 'pushNotifications', label: 'Push Bildirimleri', desc: 'Tarayıcı bildirimleri' },
+              { key: 'marketingEmails', label: 'Pazarlama E-postaları', desc: 'Özellikler ve promosyonlar hakkında bilgi alın' },
+              { key: 'autoSave', label: 'Otomatik Kaydetme', desc: 'CV\'lerinizi otomatik olarak kaydedin' },
+              { key: 'showTips', label: 'İpuçları Göster', desc: 'Uygulama içi yardım ipuçlarını göster' }
+            ].map((setting) => (
+              <div key={setting.key} style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                padding: '1.5rem',
+                background: 'rgba(249, 250, 251, 0.5)',
+                borderRadius: '12px',
+                border: '2px solid rgba(229, 231, 235, 0.8)'
+              }}>
+                <div>
+                  <div style={{ fontSize: '1rem', fontWeight: '600', color: '#1f2937', marginBottom: '0.25rem' }}>
+                    {setting.label}
+                  </div>
+                  <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                    {setting.desc}
+                  </div>
                 </div>
-              )}
+                <button
+                  onClick={() => updatePreference(setting.key, !userSettings.preferences[setting.key as keyof typeof userSettings.preferences])}
+                  style={{
+                    width: '50px',
+                    height: '30px',
+                    borderRadius: '15px',
+                    border: 'none',
+                    background: userSettings.preferences[setting.key as keyof typeof userSettings.preferences] 
+                      ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' 
+                      : '#d1d5db',
+                    position: 'relative',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  <div style={{
+                    width: '22px',
+                    height: '22px',
+                    borderRadius: '50%',
+                    background: 'white',
+                    position: 'absolute',
+                    top: '4px',
+                    left: userSettings.preferences[setting.key as keyof typeof userSettings.preferences] ? '24px' : '4px',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                  }} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Privacy & Security */}
+        <div style={{ 
+          background: 'rgba(255, 255, 255, 0.95)', 
+          backdropFilter: 'blur(20px)',
+          borderRadius: '20px', 
+          padding: '2.5rem', 
+          marginBottom: '2rem',
+          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
+          border: '1px solid rgba(255, 255, 255, 0.2)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+            <div style={{
+              width: '60px',
+              height: '60px',
+              background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 10px 30px rgba(139, 92, 246, 0.3)'
+            }}>
+              <Shield style={{ width: '1.5rem', height: '1.5rem', color: 'white' }} />
+            </div>
+            <div>
+              <h2 style={{ 
+                fontSize: '1.5rem', 
+                fontWeight: '700', 
+                color: '#1f2937', 
+                margin: 0 
+              }}>
+                Gizlilik ve Güvenlik
+              </h2>
+              <p style={{ 
+                fontSize: '0.875rem', 
+                color: '#6b7280', 
+                margin: '0.25rem 0 0 0',
+                fontWeight: '500'
+              }}>
+                Veri gizliliği ayarlarınızı kontrol edin
+              </p>
+            </div>
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between',
+              padding: '1.5rem',
+              background: 'rgba(249, 250, 251, 0.5)',
+              borderRadius: '12px',
+              border: '2px solid rgba(229, 231, 235, 0.8)'
+            }}>
+              <div>
+                <div style={{ fontSize: '1rem', fontWeight: '600', color: '#1f2937', marginBottom: '0.25rem' }}>
+                  Profil Görünürlüğü
+                </div>
+                <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                  CV'lerinizin kimler tarafından görülebileceğini seçin
+                </div>
+              </div>
+              <select
+                value={userSettings.privacy.profileVisibility}
+                onChange={(e) => updatePrivacy('profileVisibility', e.target.value)}
+                style={{
+                  padding: '0.75rem 1rem',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '8px',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  background: 'white',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="public">Herkese Açık</option>
+                <option value="limited">Sınırlı</option>
+                <option value="private">Özel</option>
+              </select>
+            </div>
+
+            {[
+              { key: 'showEmail', label: 'E-posta Adresini Göster', desc: 'CV\'nizde e-posta adresinizi gösterin' },
+              { key: 'showPhone', label: 'Telefon Numarasını Göster', desc: 'CV\'nizde telefon numaranızı gösterin' },
+              { key: 'allowAnalytics', label: 'Analitik Verilerine İzin Ver', desc: 'Uygulama geliştirme için anonim veri toplama' }
+            ].map((setting) => (
+              <div key={setting.key} style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                padding: '1.5rem',
+                background: 'rgba(249, 250, 251, 0.5)',
+                borderRadius: '12px',
+                border: '2px solid rgba(229, 231, 235, 0.8)'
+              }}>
+                <div>
+                  <div style={{ fontSize: '1rem', fontWeight: '600', color: '#1f2937', marginBottom: '0.25rem' }}>
+                    {setting.label}
+                  </div>
+                  <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                    {setting.desc}
+                  </div>
+                </div>
+                <button
+                  onClick={() => updatePrivacy(setting.key, !userSettings.privacy[setting.key as keyof typeof userSettings.privacy])}
+                  style={{
+                    width: '50px',
+                    height: '30px',
+                    borderRadius: '15px',
+                    border: 'none',
+                    background: userSettings.privacy[setting.key as keyof typeof userSettings.privacy] 
+                      ? 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)' 
+                      : '#d1d5db',
+                    position: 'relative',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  <div style={{
+                    width: '22px',
+                    height: '22px',
+                    borderRadius: '50%',
+                    background: 'white',
+                    position: 'absolute',
+                    top: '4px',
+                    left: userSettings.privacy[setting.key as keyof typeof userSettings.privacy] ? '24px' : '4px',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                  }} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Data Management */}
+        <div style={{ 
+          background: 'rgba(255, 255, 255, 0.95)', 
+          backdropFilter: 'blur(20px)',
+          borderRadius: '20px', 
+          padding: '2.5rem', 
+          marginBottom: '2rem',
+          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
+          border: '1px solid rgba(255, 255, 255, 0.2)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+            <div style={{
+              width: '60px',
+              height: '60px',
+              background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 10px 30px rgba(6, 182, 212, 0.3)'
+            }}>
+              <Download style={{ width: '1.5rem', height: '1.5rem', color: 'white' }} />
+            </div>
+            <div>
+              <h2 style={{ 
+                fontSize: '1.5rem', 
+                fontWeight: '700', 
+                color: '#1f2937', 
+                margin: 0 
+              }}>
+                Veri Yönetimi
+              </h2>
+              <p style={{ 
+                fontSize: '0.875rem', 
+                color: '#6b7280', 
+                margin: '0.25rem 0 0 0',
+                fontWeight: '500'
+              }}>
+                Verilerinizi yedekleyin veya hesabınızı yönetin
+              </p>
+            </div>
+          </div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+            <button
+              onClick={handleExportData}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1rem',
+                padding: '1.5rem',
+                background: 'rgba(6, 182, 212, 0.1)',
+                border: '2px solid rgba(6, 182, 212, 0.2)',
+                borderRadius: '12px',
+                color: '#0891b2',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                textAlign: 'left'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.background = 'rgba(6, 182, 212, 0.15)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.background = 'rgba(6, 182, 212, 0.1)';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              <Download style={{ width: '1.5rem', height: '1.5rem' }} />
+              <div>
+                <div style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.25rem' }}>
+                  Verileri Dışa Aktar
+                </div>
+                <div style={{ fontSize: '0.875rem', opacity: 0.8 }}>
+                  Tüm CV verilerinizi JSON formatında indirin
+                </div>
+              </div>
+            </button>
+
+            <Link 
+              href="/premium"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1rem',
+                padding: '1.5rem',
+                background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%)',
+                border: '2px solid rgba(251, 191, 36, 0.2)',
+                borderRadius: '12px',
+                color: '#d97706',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                textDecoration: 'none'
+              }}
+            >
+              <Crown style={{ width: '1.5rem', height: '1.5rem' }} />
+              <div>
+                <div style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.25rem' }}>
+                  Premium'a Geç
+                </div>
+                <div style={{ fontSize: '0.875rem', opacity: 0.8 }}>
+                  Gelişmiş özellikler ve şablonlar
+                </div>
+              </div>
+            </Link>
+          </div>
+        </div>
+
+        {/* Danger Zone */}
+        <div style={{ 
+          background: 'rgba(255, 255, 255, 0.95)', 
+          backdropFilter: 'blur(20px)',
+          borderRadius: '20px', 
+          padding: '2.5rem',
+          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
+          border: '2px solid rgba(239, 68, 68, 0.2)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+            <div style={{
+              width: '60px',
+              height: '60px',
+              background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 10px 30px rgba(239, 68, 68, 0.3)'
+            }}>
+              <Trash2 style={{ width: '1.5rem', height: '1.5rem', color: 'white' }} />
+            </div>
+            <div>
+              <h2 style={{ 
+                fontSize: '1.5rem', 
+                fontWeight: '700', 
+                color: '#dc2626', 
+                margin: 0 
+              }}>
+                Tehlikeli Alan
+              </h2>
+              <p style={{ 
+                fontSize: '0.875rem', 
+                color: '#6b7280', 
+                margin: '0.25rem 0 0 0',
+                fontWeight: '500'
+              }}>
+                Geri alınamaz işlemler
+              </p>
             </div>
           </div>
           
           <div style={{
-            display: 'flex',
-            gap: '0.5rem',
-            marginBottom: '1rem'
+            padding: '1.5rem',
+            background: 'rgba(254, 242, 242, 0.8)',
+            borderRadius: '12px',
+            border: '2px solid rgba(252, 165, 165, 0.5)'
           }}>
-            <button
-              onClick={() => setModalBillingType('monthly')}
-              style={{
-                flex: 1,
-                padding: '0.5rem 1rem',
-                border: modalBillingType === 'monthly' ? '2px solid #3b82f6' : `1px solid ${themeColors.border}`,
-                borderRadius: '8px',
-                background: modalBillingType === 'monthly' ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-                color: modalBillingType === 'monthly' ? '#3b82f6' : themeColors.textPrimary,
-                cursor: 'pointer',
-                fontSize: '0.875rem',
-                fontWeight: '500'
-              }}
-            >
-              Aylık
-            </button>
-            <button
-              onClick={() => setModalBillingType('yearly')}
-              style={{
-                flex: 1,
-                padding: '0.5rem 1rem',
-                border: modalBillingType === 'yearly' ? '2px solid #3b82f6' : `1px solid ${themeColors.border}`,
-                borderRadius: '8px',
-                background: modalBillingType === 'yearly' ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-                color: modalBillingType === 'yearly' ? '#3b82f6' : themeColors.textPrimary,
-                cursor: 'pointer',
-                fontSize: '0.875rem',
-                fontWeight: '500'
-              }}
-            >
-              Yıllık (İndirimli)
-            </button>
-          </div>
-        </div>
-
-        {/* Payment Methods */}
-        <div style={{ marginBottom: '2rem' }}>
-          <h4 style={{ 
-            fontSize: '1rem', 
-            fontWeight: '600', 
-            color: themeColors.textPrimary, 
-            marginBottom: '1rem' 
-          }}>
-            Ödeme Yöntemi Seçin
-          </h4>
-          
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {[
-              { id: 'card', label: 'Kredi/Banka Kartı', icon: CreditCard, desc: 'Visa, Mastercard, Amex' },
-              { id: 'mobile', label: 'Mobil Ödeme', icon: Smartphone, desc: 'Turkcell, Vodafone, Türk Telekom' },
-              { id: 'crypto', label: 'Kripto Para', icon: Globe, desc: 'Bitcoin, Ethereum, USDT' }
-            ].map((method) => {
-              const Icon = method.icon;
-              return (
-                <button
-                  key={method.id}
-                  onClick={() => setPaymentMethod(method.id as 'card' | 'mobile' | 'crypto')}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '1rem',
-                    padding: '1rem',
-                    border: paymentMethod === method.id ? '2px solid #3b82f6' : `1px solid ${themeColors.border}`,
-                    borderRadius: '12px',
-                    background: paymentMethod === method.id ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-                    color: paymentMethod === method.id ? '#3b82f6' : themeColors.textPrimary,
-                    cursor: 'pointer',
-                    width: '100%',
-                    textAlign: 'left'
-                  }}
-                >
-                  <Icon style={{ 
-                    width: '1.5rem', 
-                    height: '1.5rem', 
-                    color: paymentMethod === method.id ? '#3b82f6' : themeColors.textSecondary 
-                  }} />
-                  <div>
-                    <div style={{ 
-                      fontWeight: '500', 
-                      color: paymentMethod === method.id ? '#3b82f6' : themeColors.textPrimary 
-                    }}>
-                      {method.label}
-                    </div>
-                    <div style={{ 
-                      fontSize: '0.75rem', 
-                      color: themeColors.textSecondary 
-                    }}>
-                      {method.desc}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Payment Form */}
-        {paymentMethod === 'card' && (
-          <div style={{ marginBottom: '2rem' }}>
             <div style={{ marginBottom: '1rem' }}>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: themeColors.textPrimary, 
-                marginBottom: '0.5rem' 
-              }}>
-                Kart Numarası
-              </label>
-              <input
-                type="text"
-                placeholder="1234 5678 9012 3456"
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: `1px solid ${themeColors.border}`,
-                  borderRadius: '8px',
-                  background: themeColors.inputBg,
-                  color: themeColors.textPrimary
-                }}
-              />
-            </div>
-            
-            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '0.875rem', 
-                  fontWeight: '500', 
-                  color: themeColors.textPrimary, 
-                  marginBottom: '0.5rem' 
-                }}>
-                  Son Kullanma
-                </label>
-                <input
-                  type="text"
-                  placeholder="MM/YY"
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    border: `1px solid ${themeColors.border}`,
-                    borderRadius: '8px',
-                    background: themeColors.inputBg,
-                    color: themeColors.textPrimary
-                  }}
-                />
+              <div style={{ fontSize: '1rem', fontWeight: '600', color: '#dc2626', marginBottom: '0.5rem' }}>
+                Hesabı Sil
               </div>
-              <div style={{ flex: 1 }}>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '0.875rem', 
-                  fontWeight: '500', 
-                  color: themeColors.textPrimary, 
-                  marginBottom: '0.5rem' 
-                }}>
-                  CVV
-                </label>
-                <input
-                  type="text"
-                  placeholder="123"
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    border: `1px solid ${themeColors.border}`,
-                    borderRadius: '8px',
-                    background: themeColors.inputBg,
-                    color: themeColors.textPrimary
-                  }}
-                />
+              <div style={{ fontSize: '0.875rem', color: '#6b7280', lineHeight: '1.5' }}>
+                Hesabınızı sildiğinizde tüm CV'leriniz, verileriniz ve ayarlarınız kalıcı olarak silinecektir. 
+                Bu işlem geri alınamaz.
               </div>
             </div>
             
-            <div>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: themeColors.textPrimary, 
-                marginBottom: '0.5rem' 
-              }}>
-                Kart Sahibi
-              </label>
-              <input
-                type="text"
-                placeholder="Adınız Soyadınız"
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: `1px solid ${themeColors.border}`,
-                  borderRadius: '8px',
-                  background: themeColors.inputBg,
-                  color: themeColors.textPrimary
-                }}
-              />
-            </div>
+            <button
+              onClick={() => setShowDeleteAccount(true)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.75rem 1.5rem',
+                background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                color: 'white',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              <Trash2 style={{ width: '1rem', height: '1rem' }} />
+              Hesabı Sil
+            </button>
           </div>
-        )}
-
-        {/* Security Info */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          padding: '1rem',
-          background: settings.preferences.theme === 'dark' ? 'rgba(16, 185, 129, 0.1)' : '#ecfdf5',
-          borderRadius: '8px',
-          marginBottom: '2rem',
-          border: '1px solid rgba(16, 185, 129, 0.2)'
-        }}>
-          <Shield style={{ width: '1rem', height: '1rem', color: '#10b981' }} />
-          <div style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: '500' }}>
-            256-bit SSL şifreleme ile güvenli ödeme
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <button
-            onClick={onClose}
-            style={{
-              flex: 1,
-              padding: '0.875rem 1.5rem',
-              border: `1px solid ${themeColors.border}`,
-              borderRadius: '12px',
-              background: 'transparent',
-              color: themeColors.textPrimary,
-              cursor: 'pointer',
-              fontWeight: '500'
-            }}
-          >
-            İptal
-          </button>
-          <button
-            onClick={handlePayment}
-            disabled={isProcessing}
-            style={{
-              flex: 2,
-              padding: '0.875rem 1.5rem',
-              border: 'none',
-              borderRadius: '12px',
-              background: isProcessing ? '#9ca3af' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
-              cursor: isProcessing ? 'not-allowed' : 'pointer',
-              fontWeight: '600',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem'
-            }}
-          >
-            {isProcessing ? (
-              <>
-                <div style={{
-                  width: '1rem',
-                  height: '1rem',
-                  border: '2px solid transparent',
-                  borderTop: '2px solid white',
-                  borderRadius: '50%',
-                  animation: 'spin 1s linear infinite'
-                }} />
-                İşleniyor...
-              </>
-            ) : (
-              <>
-                <CreditCard style={{ width: '1rem', height: '1rem' }} />
-                ₺{finalPrice} Öde
-              </>
-            )}
-          </button>
         </div>
       </div>
-    </div>
-  );
-};
 
-
-export default function PricingPage() {
-  const { settings } = useSettings();
-  const { t } = useTranslation();
-  const themeColors = getThemeColors(settings.preferences.theme);
-  
-  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [selectedPremiumPlan, setSelectedPremiumPlan] = useState<'basic' | 'pro' | 'enterprise'>('pro');
-
-  const plans: Plans = {
-    free: {
-      name: 'Ücretsiz',
-      price: { monthly: 0, yearly: 0 },
-      description: 'Başlamak için mükemmel',
-      features: [
-        '3 temel şablon',
-        '5 CV oluşturma',
-        'PDF indirme',
-        'Temel düzenleme araçları',
-        'E-posta desteği'
-      ],
-      limitations: [
-        'Sınırlı şablon seçeneği',
-        'Watermark ile PDF',
-        'Temel özellikler'
-      ],
-      buttonText: 'Mevcut Plan',
-      popular: false
-    },
-    basic: {
-      name: 'Basic Premium',
-      price: { monthly: 29, yearly: 290 },
-      description: 'Kişisel kullanım için ideal',
-      features: [
-        '15 premium şablon',
-        'Sınırsız CV oluşturma',
-        'Watermark\'sız PDF',
-        'Gelişmiş düzenleme araçları',
-        'Özel renkler ve fontlar',
-        'Öncelikli e-posta desteği',
-        '3 dil desteği'
-      ],
-      buttonText: 'Basic\'e Geç',
-      popular: false
-    },
-    pro: {
-      name: 'Pro Premium',
-      price: { monthly: 49, yearly: 490 },
-      description: 'Profesyoneller için en popüler',
-      features: [
-        '50+ premium şablon',
-        'Sınırsız CV oluşturma',
-        'Watermark\'sız PDF',
-        'Tüm düzenleme araçları',
-        'Özel tasarım editörü',
-        'AI destekli içerik önerileri',
-        'Cover letter şablonları',
-        'LinkedIn entegrasyonu',
-        'Öncelikli chat desteği',
-        'Tüm dil desteği',
-        'İstatistik ve analitik'
-      ],
-      buttonText: 'Pro\'ya Geç',
-      popular: true
-    },
-    enterprise: {
-      name: 'Enterprise',
-      price: { monthly: 99, yearly: 990 },
-      description: 'Ekipler ve kurumlar için',
-      features: [
-        'Tüm Pro özellikler',
-        'Ekip yönetimi (10 kullanıcı)',
-        'Özel şablon tasarımı',
-        'API erişimi',
-        'White-label çözümü',
-        'Özel entegrasyonlar',
-        'Dedicated hesap yöneticisi',
-        '7/24 telefon desteği',
-        'SLA garantisi',
-        'Özel eğitim seansları'
-      ],
-      buttonText: 'Enterprise\'a Geç',
-      popular: false
-    }
-  };
-
-  const handleSelectPlan = (planType: 'basic' | 'pro' | 'enterprise') => {
-    setSelectedPremiumPlan(planType);
-    setShowPaymentModal(true);
-  };
-  
-  return (
-    <div style={{ 
-      minHeight: '100vh', 
-      background: themeColors.background,
-      transition: 'all 0.3s ease'
-    }}>
-      {/* Header */}
-      <div style={{ 
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        padding: '4rem 0',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
+      {/* Delete Account Modal */}
+      {showDeleteAccount && (
         <div style={{
-          position: 'absolute',
+          position: 'fixed',
           top: 0,
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="white" fill-opacity="0.03"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/svg%3E")',
-          opacity: 0.1
-        }} />
-        
-        <div className="container" style={{ position: 'relative', zIndex: 1 }}>
-          <Link href="/dashboard" style={{ 
-            display: 'inline-flex', 
-            alignItems: 'center', 
-            gap: '0.5rem',
-            color: 'rgba(255, 255, 255, 0.9)',
-            textDecoration: 'none',
-            fontSize: '0.875rem',
-            fontWeight: '500',
-            marginBottom: '2rem'
-          }}>
-            <ArrowLeft style={{ width: '1rem', height: '1rem' }} />
-            Dashboard'a Dön
-          </Link>
-          
-          <div style={{ textAlign: 'center', color: 'white' }}>
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              gap: '0.5rem', 
-              marginBottom: '1rem' 
-            }}>
-              <Crown style={{ width: '2rem', height: '2rem', color: '#fbbf24' }} />
-              <h1 style={{ fontSize: '3rem', fontWeight: '700', margin: 0 }}>
-                Premium Planlar
-              </h1>
-            </div>
-            <p style={{ 
-              fontSize: '1.25rem', 
-              opacity: 0.9, 
-              maxWidth: '600px', 
-              margin: '0 auto 2rem',
-              lineHeight: '1.6'
-            }}>
-              Profesyonel CV'lerinizi bir üst seviyeye taşıyın. Premium özelliklerle 
-              daha fazla şablon, gelişmiş araçlar ve öncelikli destek.
-            </p>
-            
-            {/* Billing Toggle */}
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              gap: '1rem',
-              background: 'rgba(255, 255, 255, 0.1)',
-              padding: '0.5rem',
-              borderRadius: '50px',
-              maxWidth: 'fit-content',
-              margin: '0 auto'
-            }}>
-              <button
-                onClick={() => setSelectedPlan('monthly')}
-                style={{
-                  padding: '0.75rem 1.5rem',
-                  border: 'none',
-                  borderRadius: '50px',
-                  background: selectedPlan === 'monthly' ? 'white' : 'transparent',
-                  color: selectedPlan === 'monthly' ? '#667eea' : 'white',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease'
-                }}
-              >
-                Aylık
-              </button>
-              <button
-                onClick={() => setSelectedPlan('yearly')}
-                style={{
-                  padding: '0.75rem 1.5rem',
-                  border: 'none',
-                  borderRadius: '50px',
-                  background: selectedPlan === 'yearly' ? 'white' : 'transparent',
-                  color: selectedPlan === 'yearly' ? '#667eea' : 'white',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  position: 'relative'
-                }}
-              >
-                Yıllık
-                <span style={{
-                  position: 'absolute',
-                  top: '-0.5rem',
-                  right: '-0.5rem',
-                  background: '#fbbf24',
-                  color: '#1a202c',
-                  fontSize: '0.6rem',
-                  fontWeight: 'bold',
-                  padding: '0.25rem 0.5rem',
-                  borderRadius: '50px'
-                }}>
-                  -20%
-                </span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Pricing Cards */}
-      <div className="container" style={{ padding: '4rem 1rem' }}>
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-          gap: '2rem',
-          maxWidth: '1200px',
-          margin: '0 auto'
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
         }}>
-          {Object.entries(plans).map(([key, plan]) => (
-            <div
-              key={key}
-              style={{
-                background: themeColors.cardBg,
-                backdropFilter: 'blur(20px)',
-                borderRadius: '20px',
-                padding: '2.5rem',
-                boxShadow: plan.popular ? '0 25px 50px rgba(102, 126, 234, 0.25)' : '0 4px 6px rgba(0, 0, 0, 0.1)',
-                border: plan.popular ? '2px solid #667eea' : `1px solid ${themeColors.border}`,
-                position: 'relative',
-                transition: 'all 0.3s ease',
-                transform: plan.popular ? 'scale(1.05)' : 'scale(1)'
-              }}
-              onMouseOver={(e) => {
-                if (!plan.popular) {
-                  e.currentTarget.style.transform = 'translateY(-8px)';
-                }
-              }}
-              onMouseOut={(e) => {
-                if (!plan.popular) {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }
-              }}
-            >
-              {plan.popular && (
-                <div style={{
-                  position: 'absolute',
-                  top: '-1rem',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  color: 'white',
-                  padding: '0.5rem 1.5rem',
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '20px',
+            padding: '2.5rem',
+            maxWidth: '500px',
+            width: '90%',
+            boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)'
+          }}>
+            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+              <div style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                margin: '0 auto 1.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 15px 35px rgba(239, 68, 68, 0.3)'
+              }}>
+                <Trash2 style={{ width: '2rem', height: '2rem', color: 'white' }} />
+              </div>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#dc2626', margin: '0 0 0.5rem 0' }}>
+                Hesabı Sil
+              </h3>
+              <p style={{ fontSize: '0.875rem', color: '#6b7280', lineHeight: '1.5' }}>
+                Bu işlem geri alınamaz. Tüm verileriniz kalıcı olarak silinecektir.
+              </p>
+            </div>
+            
+            <div style={{ 
+              background: 'rgba(254, 242, 242, 0.8)',
+              padding: '1.5rem',
+              borderRadius: '12px',
+              marginBottom: '2rem',
+              border: '1px solid rgba(252, 165, 165, 0.3)'
+            }}>
+              <p style={{ fontSize: '0.875rem', color: '#dc2626', fontWeight: '600', marginBottom: '0.5rem' }}>
+                Silinecek veriler:
+              </p>
+              <ul style={{ fontSize: '0.875rem', color: '#6b7280', lineHeight: '1.6', margin: 0, paddingLeft: '1rem' }}>
+                <li>Tüm CV'leriniz ve şablonlarınız</li>
+                <li>Hesap bilgileriniz</li>
+                <li>Kullanım geçmişiniz</li>
+                <li>Premium aboneliğiniz (varsa)</li>
+              </ul>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+              <button
+                onClick={() => setShowDeleteAccount(false)}
+                style={{
+                  padding: '0.875rem 2rem',
                   borderRadius: '50px',
+                  border: '2px solid #e5e7eb',
+                  backgroundColor: 'white',
+                  color: '#374151',
+                  cursor: 'pointer',
                   fontSize: '0.875rem',
                   fontWeight: '600',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)'
-                }}>
-                  <Star style={{ width: '1rem', height: '1rem' }} />
-                  En Popüler
-                </div>
-              )}
-
-              <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                <h3 style={{ 
-                  fontSize: '1.5rem', 
-                  fontWeight: '700', 
-                  color: themeColors.textPrimary, 
-                  marginBottom: '0.5rem' 
-                }}>
-                  {plan.name}
-                </h3>
-                <p style={{ 
-                  fontSize: '0.875rem', 
-                  color: themeColors.textSecondary, 
-                  marginBottom: '1.5rem' 
-                }}>
-                  {plan.description}
-                </p>
-                
-                <div style={{ marginBottom: '1rem' }}>
-                  <span style={{ 
-                    fontSize: '3rem', 
-                    fontWeight: '700', 
-                    color: themeColors.textPrimary 
-                  }}>
-                    {/* Hata düzeltmesi: selectedPlan değişkeninin tipini güvence altına alıyoruz. */}
-                    ₺{plan.price[selectedPlan]}
-                  </span>
-                  {key !== 'free' && (
-                    <span style={{ 
-                      fontSize: '1rem', 
-                      color: themeColors.textSecondary 
-                    }}>
-                      /{selectedPlan === 'yearly' ? 'yıl' : 'ay'}
-                    </span>
-                  )}
-                </div>
-                
-                {selectedPlan === 'yearly' && key !== 'free' && (
-                  <div style={{ 
-                    fontSize: '0.875rem', 
-                    color: '#10b981', 
-                    fontWeight: '500' 
-                  }}>
-                    Yıllık ödemede %{Math.round((plan.price.monthly * 12 - plan.price.yearly) / (plan.price.monthly * 12) * 100)} tasarruf
-                  </div>
-                )}
-              </div>
-
-              <ul style={{ marginBottom: '2rem', padding: 0, listStyle: 'none' }}>
-                {plan.features.map((feature: string, index: number) => (
-                  <li key={index} style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '0.75rem', 
-                    marginBottom: '0.75rem',
-                    fontSize: '0.875rem',
-                    color: themeColors.textPrimary
-                  }}>
-                    <Check style={{ 
-                      width: '1rem', 
-                      height: '1rem', 
-                      color: '#10b981',
-                      flexShrink: 0
-                    }} />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-
-              {key === 'free' ? (
-                <button
-                  disabled
-                  style={{
-                    width: '100%',
-                    padding: '1rem 2rem',
-                    borderRadius: '12px',
-                    border: `2px solid ${themeColors.border}`,
-                    background: themeColors.inputBg,
-                    color: themeColors.textSecondary,
-                    fontWeight: '600',
-                    cursor: 'not-allowed'
-                  }}
-                >
-                  {plan.buttonText}
-                </button>
-              ) : (
-                <button
-                  onClick={() => handleSelectPlan(key as 'basic' | 'pro' | 'enterprise')}
-                  style={{
-                    width: '100%',
-                    padding: '1rem 2rem',
-                    borderRadius: '12px',
-                    border: 'none',
-                    background: plan.popular 
-                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
-                      : `linear-gradient(135deg, ${themeColors.textPrimary} 0%, ${themeColors.textSecondary} 100%)`,
-                    color: 'white',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    boxShadow: plan.popular 
-                      ? '0 4px 15px rgba(102, 126, 234, 0.4)' 
-                      : '0 2px 8px rgba(0, 0, 0, 0.1)'
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = plan.popular 
-                      ? '0 8px 25px rgba(102, 126, 234, 0.5)' 
-                      : '0 4px 15px rgba(0, 0, 0, 0.2)';
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = plan.popular 
-                      ? '0 4px 15px rgba(102, 126, 234, 0.4)' 
-                      : '0 2px 8px rgba(0, 0, 0, 0.1)';
-                  }}
-                >
-                  {plan.buttonText}
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Features Comparison */}
-      <div style={{ 
-        background: settings.preferences.theme === 'dark' ? 'rgba(31, 41, 55, 0.5)' : 'rgba(249, 250, 251, 0.8)', 
-        padding: '4rem 0' 
-      }}>
-        <div className="container">
-          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <h2 style={{ 
-              fontSize: '2.5rem', 
-              fontWeight: '700', 
-              color: themeColors.textPrimary, 
-              marginBottom: '1rem' 
-            }}>
-              Premium ile Neler Kazanırsınız?
-            </h2>
-            <p style={{ 
-              fontSize: '1.125rem', 
-              color: themeColors.textSecondary, 
-              maxWidth: '600px', 
-              margin: '0 auto' 
-            }}>
-              Profesyonel kariyerinizi destekleyecek gelişmiş özellikler
-            </p>
-          </div>
-          
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-            gap: '2rem',
-            maxWidth: '900px',
-            margin: '0 auto'
-          }}>
-            {[
-              {
-                icon: Palette,
-                title: '50+ Premium Şablon',
-                description: 'Sektöre özel tasarlanmış profesyonel şablonlar',
-                color: '#667eea'
-              },
-              {
-                icon: Zap,
-                title: 'AI Destekli İçerik',
-                description: 'Yapay zeka ile optimize edilmiş CV içeriği önerileri',
-                color: '#10b981'
-              },
-              {
-                icon: Download,
-                title: 'Watermarksız PDF',
-                description: 'Temiz, profesyonel PDF çıktıları',
-                color: '#f59e0b'
-              },
-              {
-                icon: Users,
-                title: 'Öncelikli Destek',
-                description: '7/24 chat desteği ve telefon desteği',
-                color: '#8b5cf6'
-              },
-              {
-                icon: FileText,
-                title: 'Cover Letter',
-                description: 'Ön yazı şablonları ve özelleştirme araçları',
-                color: '#ef4444'
-              },
-              {
-                icon: Clock,
-                title: 'İstatistik & Analitik',
-                description: 'CV görüntülenme ve başarı analizi',
-                color: '#06b6d4'
-              }
-            ].map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <div key={index} style={{
-                  background: themeColors.cardBg,
-                  padding: '2rem',
-                  borderRadius: '16px',
-                  textAlign: 'center',
-                  border: `1px solid ${themeColors.border}`,
                   transition: 'all 0.3s ease'
                 }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.1)';
+              >
+                İptal
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                style={{
+                  padding: '0.875rem 2rem',
+                  borderRadius: '50px',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                  color: 'white',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  transition: 'all 0.3s ease'
                 }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-                >
-                  <div style={{
-                    width: '4rem',
-                    height: '4rem',
-                    background: `linear-gradient(135deg, ${feature.color}20, ${feature.color}10)`,
-                    borderRadius: '16px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    margin: '0 auto 1.5rem',
-                    border: `2px solid ${feature.color}30`
-                  }}>
-                    <Icon style={{ width: '2rem', height: '2rem', color: feature.color }} />
-                  </div>
-                  <h3 style={{ 
-                    fontSize: '1.25rem', 
-                    fontWeight: '600', 
-                    color: themeColors.textPrimary, 
-                    marginBottom: '0.75rem' 
-                  }}>
-                    {feature.title}
-                  </h3>
-                  <p style={{ 
-                    fontSize: '0.875rem', 
-                    color: themeColors.textSecondary, 
-                    lineHeight: '1.5' 
-                  }}>
-                    {feature.description}
-                  </p>
-                </div>
-              );
-            })}
+              >
+                Evet, Hesabı Sil
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* FAQ Section */}
-      <div className="container" style={{ padding: '4rem 1rem' }}>
-        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <h2 style={{ 
-            fontSize: '2.5rem', 
-            fontWeight: '700', 
-            color: themeColors.textPrimary, 
-            marginBottom: '1rem' 
-          }}>
-            Sık Sorulan Sorular
-          </h2>
-        </div>
-        
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          {[
-            {
-              question: 'Premium planımı istediğim zaman iptal edebilir miyim?',
-              answer: 'Evet, premium planınızı istediğiniz zaman iptal edebilirsiniz. İptal ettiğinizde mevcut dönem sonuna kadar premium özelliklerini kullanmaya devam edebilirsiniz.'
-            },
-            {
-              question: 'Ücretsiz plandan premium plana geçiş nasıl olur?',
-              answer: 'Mevcut CV leriniz ve ayarlarınız korunur. Sadece premium özellikler aktifleşir ve daha fazla şablona erişim kazanırsınız.'
-            },
-            {
-              question: 'Premium planımda kaç CV oluşturabilirim?',
-              answer: 'Premium planlarda sınırsız CV oluşturabilirsiniz. İstediğiniz kadar CV yapıp düzenleyebilirsiniz.'
-            },
-            {
-              question: 'Ödeme güvenliği nasıl sağlanıyor?',
-              answer: '256-bit SSL şifreleme ile tüm ödemeleriniz güvenli şekilde işlenir. Kart bilgileriniz saklanmaz ve PCI DSS standartlarına uygun işlem yapılır.'
-            },
-            {
-              question: 'Yıllık plan avantajları nelerdir?',
-              answer: 'Yıllık planlarda %20 indirim kazanırsınız ve ödeme yapmayı unutma riski ortadan kalkar. Ayrıca yıllık plan sahipleri için özel bonuslar sunuyoruz.'
-            }
-          ].map((faq, index) => (
-            <details key={index} style={{
-              background: themeColors.cardBg,
-              marginBottom: '1rem',
-              borderRadius: '12px',
-              border: `1px solid ${themeColors.border}`,
-              overflow: 'hidden'
-            }}>
-              <summary style={{
-                padding: '1.5rem',
-                fontSize: '1.125rem',
-                fontWeight: '600',
-                color: themeColors.textPrimary,
-                cursor: 'pointer',
-                listStyle: 'none',
-                userSelect: 'none'
-              }}>
-                {faq.question}
-              </summary>
-              <div style={{
-                padding: '0 1.5rem 1.5rem',
-                fontSize: '0.875rem',
-                color: themeColors.textSecondary,
-                lineHeight: '1.6',
-                borderTop: `1px solid ${themeColors.border}`
-              }}>
-                {faq.answer}
-              </div>
-            </details>
-          ))}
-        </div>
-      </div>
-
-      {/* CTA Section */}
-      <div style={{ 
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        padding: '4rem 0',
-        textAlign: 'center',
-        color: 'white'
-      }}>
-        <div className="container">
-          <Crown style={{ width: '4rem', height: '4rem', color: '#fbbf24', margin: '0 auto 2rem' }} />
-          <h2 style={{ 
-            fontSize: '2.5rem', 
-            fontWeight: '700', 
-            marginBottom: '1rem' 
-          }}>
-            Profesyonel Kariyerinize Yatırım Yapın
-          </h2>
-          <p style={{ 
-            fontSize: '1.25rem', 
-            opacity: 0.9, 
-            maxWidth: '600px', 
-            margin: '0 auto 2rem',
-            lineHeight: '1.6'
-          }}>
-            Premium özellikleriyle CV nizi öne çıkarın ve iş başvurularınızda fark yaratın.
-          </p>
-          <button
-            onClick={() => handleSelectPlan('pro')}
-            style={{
-              padding: '1rem 2.5rem',
-              fontSize: '1.125rem',
-              fontWeight: '700',
-              background: 'white',
-              color: '#667eea',
-              border: 'none',
-              borderRadius: '50px',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 8px 25px rgba(255, 255, 255, 0.2)'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 12px 35px rgba(255, 255, 255, 0.3)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 8px 25px rgba(255, 255, 255, 0.2)';
-            }}
-          >
-            Pro Premium'u Deneyin
-          </button>
-        </div>
-      </div>
-
-      {/* Payment Modal */}
-      <PaymentModal
-        show={showPaymentModal}
-        onClose={() => setShowPaymentModal(false)}
-        selectedPremiumPlan={selectedPremiumPlan}
-        selectedPlan={selectedPlan}
-        plans={plans}
-        themeColors={themeColors}
-        settings={settings}
-      />
-
-      {/* CSS Animations */}
+      {/* CSS for animations */}
       <style jsx>{`
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
-        }
-        
-        details[open] summary {
-          border-bottom: 1px solid var(--border-light);
         }
       `}</style>
     </div>

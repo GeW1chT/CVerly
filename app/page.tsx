@@ -632,7 +632,7 @@ export default function HomePage() {
               <FileText style={{ width: '1.25rem', height: '1.25rem' }} />
               Hemen CV Oluştur
             </Link>
-            <Link href="/templates" className="btn btn-lg btn-outline" style={{ borderColor: 'white', color: 'white' }}>
+            <Link href="/templates" className="btn btn-lg btn-outline" style={{ borderColor: 'white', color: '#2563eb' }}>
               Şablonları Gör
             </Link>
           </div>
