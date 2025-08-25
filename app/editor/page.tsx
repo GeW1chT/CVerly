@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { 
@@ -15,14 +15,48 @@ import {
   Trash2,
   Mail,
   Phone,
-  MapPin,
-  Calendar,
-  Building
+  MapPin
 } from 'lucide-react';
 
+// Type definitions
+interface PersonalInfo {
+  name: string;
+  email: string;
+  phone: string;
+  location: string;
+  linkedin: string;
+  github: string;
+}
+
+interface Experience {
+  id: string;
+  title: string;
+  company: string;
+  period: string;
+  description: string;
+}
+
+interface Education {
+  id: string;
+  degree: string;
+  school: string;
+  period: string;
+}
+
+interface CVData {
+  id: string;
+  name: string;
+  template: string;
+  personalInfo: PersonalInfo;
+  summary: string;
+  experience: Experience[];
+  education: Education[];
+  skills: string[];
+}
+
 // CV verilerini yükleme fonksiyonu
-const getCVData = (id: string) => {
-  const cvDatabase = {
+const getCVData = (id: string): CVData | null => {
+  const cvDatabase: Record<string, CVData> = {
     '1': {
       id: '1',
       name: 'Yazılım Geliştirici CV',
@@ -64,10 +98,10 @@ const getCVData = (id: string) => {
     }
   };
   
-  return cvDatabase[id as keyof typeof cvDatabase] || null;
+  return cvDatabase[id] || null;
 };
 
-const getEmptyCV = () => ({
+const getEmptyCV = (): CVData => ({
   id: '',
   name: 'Yeni CV',
   template: 'Modern',
@@ -85,11 +119,12 @@ const getEmptyCV = () => ({
   skills: []
 });
 
-function CVEditor() {
+// Ana CV Editor Componenti
+function CVEditorContent() {
   const searchParams = useSearchParams();
   const cvId = searchParams?.get('cv');
   
-  const [cvData, setCvData] = useState(() => {
+  const [cvData, setCvData] = useState<CVData>(() => {
     if (cvId) {
       return getCVData(cvId) || getEmptyCV();
     }
@@ -100,8 +135,8 @@ function CVEditor() {
   const [isSaving, setIsSaving] = useState(false);
 
   // Kişisel bilgi güncelleme
-  const updatePersonalInfo = (field: string, value: string) => {
-    setCvData((prev: any) => ({
+  const updatePersonalInfo = (field: keyof PersonalInfo, value: string) => {
+    setCvData(prev => ({
       ...prev,
       personalInfo: {
         ...prev.personalInfo,
@@ -112,14 +147,14 @@ function CVEditor() {
 
   // Deneyim ekleme
   const addExperience = () => {
-    const newExp = {
+    const newExp: Experience = {
       id: Date.now().toString(),
       title: '',
       company: '',
       period: '',
       description: ''
     };
-    setCvData((prev: any) => ({
+    setCvData(prev => ({
       ...prev,
       experience: [...prev.experience, newExp]
     }));
@@ -127,17 +162,17 @@ function CVEditor() {
 
   // Deneyim silme
   const removeExperience = (id: string) => {
-    setCvData((prev: any) => ({
+    setCvData(prev => ({
       ...prev,
-      experience: prev.experience.filter((exp: any) => exp.id !== id)
+      experience: prev.experience.filter(exp => exp.id !== id)
     }));
   };
 
   // Deneyim güncelleme
-  const updateExperience = (id: string, field: string, value: string) => {
-    setCvData((prev: any) => ({
+  const updateExperience = (id: string, field: keyof Experience, value: string) => {
+    setCvData(prev => ({
       ...prev,
-      experience: prev.experience.map((exp: any) => 
+      experience: prev.experience.map(exp => 
         exp.id === id ? { ...exp, [field]: value } : exp
       )
     }));
@@ -145,13 +180,13 @@ function CVEditor() {
 
   // Eğitim ekleme
   const addEducation = () => {
-    const newEdu = {
+    const newEdu: Education = {
       id: Date.now().toString(),
       degree: '',
       school: '',
       period: ''
     };
-    setCvData((prev: any) => ({
+    setCvData(prev => ({
       ...prev,
       education: [...prev.education, newEdu]
     }));
@@ -159,17 +194,17 @@ function CVEditor() {
 
   // Eğitim silme
   const removeEducation = (id: string) => {
-    setCvData((prev: any) => ({
+    setCvData(prev => ({
       ...prev,
-      education: prev.education.filter((edu: any) => edu.id !== id)
+      education: prev.education.filter(edu => edu.id !== id)
     }));
   };
 
   // Eğitim güncelleme
-  const updateEducation = (id: string, field: string, value: string) => {
-    setCvData((prev: any) => ({
+  const updateEducation = (id: string, field: keyof Education, value: string) => {
+    setCvData(prev => ({
       ...prev,
-      education: prev.education.map((edu: any) => 
+      education: prev.education.map(edu => 
         edu.id === id ? { ...edu, [field]: value } : edu
       )
     }));
@@ -177,7 +212,7 @@ function CVEditor() {
 
   // Yetenek ekleme
   const addSkill = () => {
-    setCvData((prev: any) => ({
+    setCvData(prev => ({
       ...prev,
       skills: [...prev.skills, '']
     }));
@@ -185,17 +220,17 @@ function CVEditor() {
 
   // Yetenek güncelleme
   const updateSkill = (index: number, value: string) => {
-    setCvData((prev: any) => ({
+    setCvData(prev => ({
       ...prev,
-      skills: prev.skills.map((skill: any, i: any) => i === index ? value : skill)
+      skills: prev.skills.map((skill, i) => i === index ? value : skill)
     }));
   };
 
   // Yetenek silme
   const removeSkill = (index: number) => {
-    setCvData((prev: any) => ({
+    setCvData(prev => ({
       ...prev,
-      skills: prev.skills.filter((_: any, i: number) => i !== index)
+      skills: prev.skills.filter((_, i) => i !== index)
     }));
   };
 
@@ -262,12 +297,7 @@ function CVEditor() {
         }, 300);
       }, 3000);
       
-      // Dashboard'a yönlendir (isteğe bağlı)
-      // setTimeout(() => {
-      //   window.location.href = '/dashboard';
-      // }, 2000);
-      
-    } catch (error) {
+    } catch {
       // Hata bildirimi
       alert('CV kaydedilirken bir hata oluştu. Lütfen tekrar deneyin.');
     } finally {
@@ -279,7 +309,7 @@ function CVEditor() {
     if (cvData.id) {
       window.open(`/cv-preview/${cvData.id}`, '_blank');
     } else {
-      alert('Önizleme için önce CV\'yi kaydedin.');
+      alert('Önizleme için önce CV&apos;yi kaydedin.');
     }
   };
 
@@ -328,7 +358,7 @@ function CVEditor() {
                 transition: 'all 0.3s ease'
               }}>
                 <ArrowLeft style={{ width: '1rem', height: '1rem' }} />
-                Dashboard'a Dön
+                Dashboard&apos;a Dön
               </Link>
               
               <div style={{ height: '2rem', width: '1px', background: 'rgba(0,0,0,0.1)' }} />
@@ -372,14 +402,6 @@ function CVEditor() {
                   boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
                   backdropFilter: 'blur(10px)'
                 }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
-                }}
               >
                 <Eye style={{ width: '1.125rem', height: '1.125rem' }} />
                 Önizleme
@@ -402,18 +424,6 @@ function CVEditor() {
                   cursor: isSaving ? 'not-allowed' : 'pointer',
                   transition: 'all 0.3s ease',
                   boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)'
-                }}
-                onMouseOver={(e) => {
-                  if (!isSaving) {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.5)';
-                  }
-                }}
-                onMouseOut={(e) => {
-                  if (!isSaving) {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
-                  }
                 }}
               >
                 <Save style={{ 
@@ -525,16 +535,6 @@ function CVEditor() {
                   outline: 'none'
                 }}
                 placeholder="Adınızı ve soyadınızı girin"
-                onFocus={(e) => {
-                  e.target.style.borderColor = '#667eea';
-                  e.target.style.background = 'white';
-                  e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = 'transparent';
-                  e.target.style.background = 'rgba(249, 250, 251, 0.8)';
-                  e.target.style.boxShadow = 'none';
-                }}
               />
             </div>
             
@@ -567,16 +567,6 @@ function CVEditor() {
                   outline: 'none'
                 }}
                 placeholder="email@örnek.com"
-                onFocus={(e) => {
-                  e.target.style.borderColor = '#667eea';
-                  e.target.style.background = 'white';
-                  e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = 'transparent';
-                  e.target.style.background = 'rgba(249, 250, 251, 0.8)';
-                  e.target.style.boxShadow = 'none';
-                }}
               />
             </div>
             
@@ -609,16 +599,6 @@ function CVEditor() {
                   outline: 'none'
                 }}
                 placeholder="+90 555 123 4567"
-                onFocus={(e) => {
-                  e.target.style.borderColor = '#667eea';
-                  e.target.style.background = 'white';
-                  e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = 'transparent';
-                  e.target.style.background = 'rgba(249, 250, 251, 0.8)';
-                  e.target.style.boxShadow = 'none';
-                }}
               />
             </div>
             
@@ -651,16 +631,6 @@ function CVEditor() {
                   outline: 'none'
                 }}
                 placeholder="İstanbul, Türkiye"
-                onFocus={(e) => {
-                  e.target.style.borderColor = '#667eea';
-                  e.target.style.background = 'white';
-                  e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = 'transparent';
-                  e.target.style.background = 'rgba(249, 250, 251, 0.8)';
-                  e.target.style.boxShadow = 'none';
-                }}
               />
             </div>
           </div>
@@ -677,7 +647,7 @@ function CVEditor() {
             </label>
             <textarea
               value={cvData.summary}
-              onChange={(e) => setCvData((prev: any) => ({ ...prev, summary: e.target.value }))}
+              onChange={(e) => setCvData(prev => ({ ...prev, summary: e.target.value }))}
               style={{
                 width: '100%',
                 padding: '1.25rem',
@@ -693,16 +663,6 @@ function CVEditor() {
                 lineHeight: '1.6'
               }}
               placeholder="Kendinizi, yeteneklerinizi ve kariyer hedeflerinizi kısaca tanıtın..."
-              onFocus={(e) => {
-                e.target.style.borderColor = '#667eea';
-                e.target.style.background = 'white';
-                e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = 'transparent';
-                e.target.style.background = 'rgba(249, 250, 251, 0.8)';
-                e.target.style.boxShadow = 'none';
-              }}
             />
           </div>
         </div>
@@ -767,21 +727,13 @@ function CVEditor() {
                 transition: 'all 0.3s ease',
                 boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)'
               }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 8px 25px rgba(16, 185, 129, 0.4)';
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 15px rgba(16, 185, 129, 0.3)';
-              }}
             >
               <Plus style={{ width: '1.125rem', height: '1.125rem' }} />
               Deneyim Ekle
             </button>
           </div>
           
-          {cvData.experience.map((exp: any, index: any) => (
+          {cvData.experience.map((exp, index) => (
             <div key={exp.id} style={{ 
               border: '2px solid rgba(229, 231, 235, 0.8)', 
               borderRadius: '16px', 
@@ -789,16 +741,7 @@ function CVEditor() {
               marginBottom: '1.5rem',
               background: 'rgba(249, 250, 251, 0.5)',
               transition: 'all 0.3s ease'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.3)';
-              e.currentTarget.style.background = 'white';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(229, 231, 235, 0.8)';
-              e.currentTarget.style.background = 'rgba(249, 250, 251, 0.5)';
-            }}
-            >
+            }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
                 <h3 style={{ 
                   fontSize: '1.125rem', 
@@ -828,14 +771,6 @@ function CVEditor() {
                     cursor: 'pointer',
                     transition: 'all 0.3s ease'
                   }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.background = '#ef4444';
-                    e.currentTarget.style.color = 'white';
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
-                    e.currentTarget.style.color = '#ef4444';
-                  }}
                 >
                   <Trash2 style={{ width: '1rem', height: '1rem' }} />
                 </button>
@@ -857,14 +792,6 @@ function CVEditor() {
                     transition: 'all 0.3s ease',
                     outline: 'none'
                   }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = '#10b981';
-                    e.target.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = 'transparent';
-                    e.target.style.boxShadow = 'none';
-                  }}
                 />
                 <input
                   type="text"
@@ -880,14 +807,6 @@ function CVEditor() {
                     background: 'rgba(255, 255, 255, 0.8)',
                     transition: 'all 0.3s ease',
                     outline: 'none'
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = '#10b981';
-                    e.target.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = 'transparent';
-                    e.target.style.boxShadow = 'none';
                   }}
                 />
               </div>
@@ -909,14 +828,6 @@ function CVEditor() {
                   transition: 'all 0.3s ease',
                   outline: 'none'
                 }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = '#10b981';
-                  e.target.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = 'transparent';
-                  e.target.style.boxShadow = 'none';
-                }}
               />
               
               <textarea
@@ -936,14 +847,6 @@ function CVEditor() {
                   transition: 'all 0.3s ease',
                   outline: 'none',
                   lineHeight: '1.5'
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = '#10b981';
-                  e.target.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = 'transparent';
-                  e.target.style.boxShadow = 'none';
                 }}
               />
             </div>
@@ -967,7 +870,7 @@ function CVEditor() {
                 Henüz iş deneyimi eklenmedi
               </p>
               <p style={{ color: '#9ca3af', fontSize: '0.875rem', marginTop: '0.5rem' }}>
-                "Deneyim Ekle" butonuna tıklayarak başlayın
+                &quot;Deneyim Ekle&quot; butonuna tıklayarak başlayın
               </p>
             </div>
           )}
@@ -1033,21 +936,13 @@ function CVEditor() {
                 transition: 'all 0.3s ease',
                 boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)'
               }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 8px 25px rgba(245, 158, 11, 0.4)';
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 15px rgba(245, 158, 11, 0.3)';
-              }}
             >
               <Plus style={{ width: '1.125rem', height: '1.125rem' }} />
               Eğitim Ekle
             </button>
           </div>
           
-          {cvData.education.map((edu: any, index: any) => (
+          {cvData.education.map((edu, index) => (
             <div key={edu.id} style={{ 
               border: '2px solid rgba(229, 231, 235, 0.8)', 
               borderRadius: '16px', 
@@ -1164,7 +1059,7 @@ function CVEditor() {
                 Henüz eğitim bilgisi eklenmedi
               </p>
               <p style={{ color: '#9ca3af', fontSize: '0.875rem', marginTop: '0.5rem' }}>
-                "Eğitim Ekle" butonuna tıklayarak başlayın
+                &quot;Eğitim Ekle&quot; butonuna tıklayarak başlayın
               </p>
             </div>
           )}
@@ -1236,7 +1131,7 @@ function CVEditor() {
           </div>
           
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
-            {cvData.skills.map((skill: any, index: any) => (
+            {cvData.skills.map((skill, index) => (
               <div key={index} style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                 <input
                   type="text"
@@ -1253,16 +1148,6 @@ function CVEditor() {
                     background: 'rgba(249, 250, 251, 0.8)',
                     transition: 'all 0.3s ease',
                     outline: 'none'
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = '#8b5cf6';
-                    e.target.style.background = 'white';
-                    e.target.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1)';
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = 'transparent';
-                    e.target.style.background = 'rgba(249, 250, 251, 0.8)';
-                    e.target.style.boxShadow = 'none';
                   }}
                 />
                 <button
@@ -1301,7 +1186,7 @@ function CVEditor() {
                 Henüz yetenek eklenmedi
               </p>
               <p style={{ color: '#9ca3af', fontSize: '0.875rem', marginTop: '0.5rem' }}>
-                "Yetenek Ekle" butonuna tıklayarak başlayın
+                &quot;Yetenek Ekle&quot; butonuna tıklayarak başlayın
               </p>
             </div>
           )}
@@ -1341,4 +1226,57 @@ function CVEditor() {
   );
 }
 
-export default CVEditor;
+// Loading Component
+function EditorLoading() {
+  return (
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    }}>
+      <div style={{
+        background: 'rgba(255, 255, 255, 0.95)',
+        padding: '2rem',
+        borderRadius: '20px',
+        textAlign: 'center',
+        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
+        backdropFilter: 'blur(20px)'
+      }}>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          border: '4px solid #f3f4f6',
+          borderTop: '4px solid #667eea',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+          margin: '0 auto 1rem'
+        }} />
+        <p style={{ 
+          color: '#6b7280', 
+          fontWeight: '500',
+          margin: 0
+        }}>
+          CV Editörü yükleniyor...
+        </p>
+      </div>
+      
+      <style jsx>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// Ana Export Component - Suspense ile sarmalı
+export default function CVEditor() {
+  return (
+    <Suspense fallback={<EditorLoading />}>
+      <CVEditorContent />
+    </Suspense>
+  );
+}
