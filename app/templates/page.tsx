@@ -1,4 +1,4 @@
-// app/templates/page.tsx - Genişletilmiş
+// app/templates/page.tsx
 "use client"
 
 import React from 'react';
@@ -12,8 +12,6 @@ import CreativeTemplate from '../../components/templates/CreativeTemplate';
 import ExecutiveTemplate from '../../components/templates/ExecutiveTemplate';
 import AcademicTemplate from '../../components/templates/AcademicTemplate';
 import StartupTemplate from '../../components/templates/StartupTemplate';
-
-// New template imports
 import ModernTechTemplate from '../../components/templates/ModernTechTemplate';
 import CreativeDesignerTemplate from '../../components/templates/CreativeDesignerTemplate';
 import ExecutiveCEOTemplate from '../../components/templates/ExecutiveCEOTemplate';
@@ -229,7 +227,6 @@ export default function TemplatesPage() {
     ? templates 
     : templates.filter(template => template.category === selectedCategory);
 
-  // Template Component Renderer
   const renderTemplatePreview = (template: any) => {
     const props = { isPremium: template.isPremium };
     
@@ -265,7 +262,6 @@ export default function TemplatesPage() {
     }
   };
 
-  // Stats
   const freeCount = templates.filter(t => !t.isPremium).length;
   const premiumCount = templates.filter(t => t.isPremium).length;
 
@@ -513,7 +509,7 @@ export default function TemplatesPage() {
             Premium Şablonlarla Fark Yaratın
           </h2>
           <p style={{ fontSize: '1.125rem', marginBottom: '2rem', opacity: 0.9, margin: '0 0 2rem 0' }}>
-            Sektöre özel tasarlanmış premium şablonlarla profesyonel CV'nizi oluşturun
+            Sektöre özel tasarlanmış premium şablonlarla profesyonel CV&apos;nizi oluşturun
           </p>
           <Link 
             href="/pricing" 
@@ -534,7 +530,7 @@ export default function TemplatesPage() {
             }}
           >
             <Crown size={20} />
-            Premium'a Geçiş Yap
+            Premium&apos;a Geçiş Yap
           </Link>
         </div>
       </div>

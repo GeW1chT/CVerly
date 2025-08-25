@@ -1,4 +1,6 @@
 // components/forms/CVFormWizard.tsx
+import { CVData } from '../../lib/storage'; // CVData tipi içe aktarıldı
+
 interface CVFormWizardProps {
   initialData?: CVData;
   onSave: (data: CVData) => void;
@@ -7,7 +9,7 @@ interface CVFormWizardProps {
 
 // Adımlar:
 // 1. Kişisel Bilgiler
-// 2. İş Deneyimi  
+// 2. İş Deneyimi  
 // 3. Eğitim
 // 4. Beceriler
 // 5. Diller & Projeler

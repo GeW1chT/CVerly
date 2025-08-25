@@ -10,12 +10,12 @@ import {
   Download, 
   Trash2, 
   Eye,
-  Calendar,
-  BarChart3,
   Settings,
   Crown,
   Search,
-  AlertTriangle
+  AlertTriangle,
+  BarChart3, // Eksik olan BarChart3 eklendi
+  Calendar   // Eksik olan Calendar eklendi
 } from 'lucide-react';
 import { useSettings, useTranslation, getThemeColors } from '../contexts/SettingsContext';
 
@@ -32,7 +32,7 @@ const Dashboard = () => {
   const [cvs, setCvs] = useState([
     {
       id: '1',
-      name: t('cvs'),
+      name: 'Yazılım Geliştirici CV',
       template: 'Modern',
       lastModified: '2 gün önce',
       status: 'Tamamlandı',
@@ -76,10 +76,10 @@ const Dashboard = () => {
   ]);
 
   const stats = [
-    { label: t('totalCVs'), value: cvs.length.toString(), icon: FileText, color: 'blue' },
-    { label: 'Bu Ay ' + t('views'), value: cvs.reduce((sum, cv) => sum + cv.views, 0).toString(), icon: Eye, color: 'green' },
-    { label: t('downloads') + ' Sayısı', value: '47', icon: Download, color: 'purple' },
-    { label: t('lastUpdate'), value: '2 gün', icon: Calendar, color: 'orange' }
+    { label: 'Toplam CV', value: cvs.length.toString(), icon: FileText, color: 'blue' },
+    { label: 'Bu Ay Görüntüleme', value: cvs.reduce((sum, cv) => sum + cv.views, 0).toString(), icon: Eye, color: 'green' },
+    { label: 'İndirme Sayısı', value: '47', icon: Download, color: 'purple' },
+    { label: 'Son Güncelleme', value: '2 gün', icon: Calendar, color: 'orange' }
   ];
 
   const filteredCVs = cvs.filter(cv => 
@@ -183,27 +183,27 @@ const Dashboard = () => {
                 color: themeColors.textPrimary,
                 margin: 0
               }}>
-                {t('dashboard')}
+                Dashboard
               </h1>
               <p style={{ 
                 marginTop: '0.5rem',
                 color: themeColors.textSecondary,
                 fontSize: '1.125rem'
               }}>
-                CV'lerinizi yönetin ve performanslarını takip edin
+                CV&apos;lerinizi yönetin ve performanslarını takip edin
               </p>
             </div>
             <div style={{ display: 'flex', gap: '1rem' }}>
               <Link href="/builder" className="btn btn-primary">
                 <Plus style={{ width: '1rem', height: '1rem' }} />
-                {t('newCV')}
+                Yeni CV
               </Link>
               <button 
                 className="btn btn-outline"
                 onClick={() => window.location.href = '/settings'}
               >
                 <Settings style={{ width: '1rem', height: '1rem' }} />
-                {t('settings')}
+                Ayarlar
               </button>
             </div>
           </div>
@@ -224,16 +224,16 @@ const Dashboard = () => {
                   alignItems: 'center',
                   justifyContent: 'center',
                   backgroundColor: stat.color === 'blue' ? (settings.preferences.theme === 'dark' ? 'rgba(59, 130, 246, 0.2)' : '#dbeafe') : 
-                                 stat.color === 'green' ? (settings.preferences.theme === 'dark' ? 'rgba(16, 185, 129, 0.2)' : '#d1fae5') :
-                                 stat.color === 'purple' ? (settings.preferences.theme === 'dark' ? 'rgba(139, 92, 246, 0.2)' : '#e9d5ff') : 
-                                 (settings.preferences.theme === 'dark' ? 'rgba(245, 158, 11, 0.2)' : '#fed7aa')
+                                    stat.color === 'green' ? (settings.preferences.theme === 'dark' ? 'rgba(16, 185, 129, 0.2)' : '#d1fae5') :
+                                    stat.color === 'purple' ? (settings.preferences.theme === 'dark' ? 'rgba(139, 92, 246, 0.2)' : '#e9d5ff') : 
+                                    (settings.preferences.theme === 'dark' ? 'rgba(245, 158, 11, 0.2)' : '#fed7aa')
                 }}>
                   <Icon style={{ 
                     width: '1.5rem', 
                     height: '1.5rem',
                     color: stat.color === 'blue' ? '#2563eb' : 
-                           stat.color === 'green' ? '#059669' :
-                           stat.color === 'purple' ? '#7c3aed' : '#ea580c'
+                                stat.color === 'green' ? '#059669' :
+                                stat.color === 'purple' ? '#7c3aed' : '#ea580c'
                   }} />
                 </div>
                 <div style={{ 
@@ -261,7 +261,7 @@ const Dashboard = () => {
           <div className="card">
             <div className="card-header">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 className="card-title">{t('cvs')}</h2>
+                <h2 className="card-title">CV&apos;lerim</h2>
                 <div style={{ position: 'relative', width: '250px' }}>
                   <Search style={{ 
                     position: 'absolute', 
@@ -274,7 +274,7 @@ const Dashboard = () => {
                   }} />
                   <input
                     type="text"
-                    placeholder={t('search')}
+                    placeholder="Ara..."
                     className="input"
                     style={{ 
                       paddingLeft: '2.5rem', 
@@ -371,7 +371,7 @@ const Dashboard = () => {
                               borderRadius: '6px',
                               transition: 'all 0.2s ease'
                             }}
-                            title={t('preview')}
+                            title="Önizle"
                             onClick={() => handleView(cv)}
                             onMouseOver={(e) => {
                               e.currentTarget.style.backgroundColor = settings.preferences.theme === 'dark' ? 'rgba(55, 65, 81, 0.5)' : 'rgba(243, 244, 246, 0.8)';
@@ -392,7 +392,7 @@ const Dashboard = () => {
                               borderRadius: '6px',
                               transition: 'all 0.2s ease'
                             }}
-                            title={t('edit')}
+                            title="Düzenle"
                             onClick={() => handleEdit(cv)}
                             onMouseOver={(e) => {
                               e.currentTarget.style.backgroundColor = settings.preferences.theme === 'dark' ? 'rgba(55, 65, 81, 0.5)' : 'rgba(243, 244, 246, 0.8)';
@@ -413,7 +413,7 @@ const Dashboard = () => {
                               borderRadius: '6px',
                               transition: 'all 0.2s ease'
                             }}
-                            title={isDownloading === cv.id ? 'İndiriliyor...' : t('download')}
+                            title={isDownloading === cv.id ? 'İndiriliyor...' : 'İndir'}
                             onClick={() => handleDownload(cv)}
                             disabled={isDownloading === cv.id}
                           >
@@ -435,7 +435,7 @@ const Dashboard = () => {
                               borderRadius: '6px',
                               transition: 'all 0.2s ease'
                             }}
-                            title={t('delete')}
+                            title="Sil"
                             onClick={() => openDeleteModal(cv)}
                             onMouseOver={(e) => {
                               e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
@@ -502,7 +502,7 @@ const Dashboard = () => {
               <div className="card-content" style={{ padding: '2rem' }}>
                 <Crown style={{ width: '2.5rem', height: '2.5rem', margin: '0 auto 1rem', color: '#fbbf24' }} />
                 <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.5rem' }}>
-                  Premium'a Geç
+                  Premium&apos;a Geç
                 </h3>
                 <p style={{ fontSize: '0.875rem', opacity: 0.9, marginBottom: '1rem' }}>
                   Daha fazla şablon, gelişmiş özellikler ve öncelikli destek
@@ -533,7 +533,7 @@ const Dashboard = () => {
                       fontSize: '0.875rem', 
                       color: themeColors.textSecondary 
                     }}>
-                      {t('views')}
+                      Görüntüleme
                     </span>
                     <span style={{ 
                       fontWeight: '600',
@@ -547,7 +547,7 @@ const Dashboard = () => {
                       fontSize: '0.875rem', 
                       color: themeColors.textSecondary 
                     }}>
-                      {t('downloads')}
+                      İndirme Sayısı
                     </span>
                     <span style={{ 
                       fontWeight: '600',
@@ -619,7 +619,7 @@ const Dashboard = () => {
                   margin: 0,
                   color: themeColors.textPrimary 
                 }}>
-                  CV'yi Sil
+                  CV&apos;yi Sil
                 </h3>
                 <p style={{ 
                   fontSize: '0.875rem', 
@@ -636,7 +636,7 @@ const Dashboard = () => {
               color: themeColors.textPrimary,
               lineHeight: '1.5' 
             }}>
-              "<strong>{deleteModal.cvName}</strong>" adlı CV'yi silmek istediğinizden emin misiniz?
+              "<strong>{deleteModal.cvName}</strong>" adlı CV&apos;yi silmek istediğinizden emin misiniz?
             </p>
             
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
@@ -670,7 +670,7 @@ const Dashboard = () => {
                   transition: 'all 0.2s ease'
                 }}
               >
-                {t('delete')}
+                Sil
               </button>
             </div>
           </div>

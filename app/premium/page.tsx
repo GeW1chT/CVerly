@@ -20,8 +20,6 @@ import {
   Sparkles
 } from 'lucide-react';
 
-type PlanType = 'monthly' | 'yearly';
-
 const PremiumPage = () => {
   const [isYearly, setIsYearly] = useState<boolean>(true);
   const router = useRouter();
@@ -69,7 +67,7 @@ const PremiumPage = () => {
     {
       icon: Zap,
       title: "AI CV Optimizasyonu",
-      description: "AI ile CV'nizi optimize edin",
+      description: "AI ile CV&apos;nizi optimize edin",
       free: false,
       premium: true
     }
@@ -109,7 +107,7 @@ const PremiumPage = () => {
         "CV performans takibi"
       ],
       popular: true,
-      buttonText: "Premium'a Geç",
+      buttonText: "Premium&apos;a Geç",
       buttonStyle: "btn-primary",
       savings: isYearly ? "43%" : null
     }
@@ -119,14 +117,14 @@ const PremiumPage = () => {
     {
       name: "Ahmet Kaya",
       role: "Yazılım Geliştirici",
-      content: "Premium şablonlar sayesinde dream job'uma kavuştum. AI optimizasyon özelliği muhteşem!",
+      content: "Premium şablonlar sayesinde dream job&apos;uma kavuştum. AI optimizasyon özelliği muhteşem!",
       rating: 5,
       avatar: "/api/placeholder/64/64"
     },
     {
       name: "Zeynep Demir", 
       role: "Pazarlama Uzmanı",
-      content: "Analitik özelliği ile CV'min performansını takip edebiliyorum. Çok profesyonel!",
+      content: "Analitik özelliği ile CV&apos;min performansını takip edebiliyorum. Çok profesyonel!",
       rating: 5,
       avatar: "/api/placeholder/64/64"
     },
@@ -149,8 +147,8 @@ const PremiumPage = () => {
       answer: "Evet, tüm ödemeler SSL şifrelemesi ve güvenilir ödeme sağlayıcıları ile korunmaktadır."
     },
     {
-      question: "Ücretsiz sürümden premium'a geçersem verilerim kaybolur mu?",
-      answer: "Hayır, tüm CV'leriniz ve verileriniz korunur ve premium özelliklere hemen erişebilirsiniz."
+      question: "Ücretsiz sürümden premium&apos;a geçersem verilerim kaybolur mu?",
+      answer: "Hayır, tüm CV&apos;leriniz ve verileriniz korunur ve premium özelliklere hemen erişebilirsiniz."
     },
     {
       question: "Premium özelliklerle hangi avantajları elde ederim?",

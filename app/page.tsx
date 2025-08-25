@@ -10,8 +10,7 @@ import {
   Zap, 
   Star,
   CheckCircle,
-  ArrowRight,
-  Play
+  ArrowRight
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -29,12 +28,12 @@ export default function HomePage() {
     {
       icon: Download,
       title: 'PDF İndirme',
-      description: 'CV\'nizi yüksek kalitede PDF formatında anında indirin.'
+      description: 'CV&apos;nizi yüksek kalitede PDF formatında anında indirin.'
     },
     {
       icon: Zap,
       title: 'Hızlı ve Güvenli',
-      description: 'Verileriniz güvende kalır, CV\'nizi saniyeler içinde oluşturun.'
+      description: 'Verileriniz güvende kalır, CV&apos;nizi saniyeler içinde oluşturun.'
     }
   ];
 
@@ -77,7 +76,7 @@ export default function HomePage() {
     },
     { 
       title: 'Hızlı Sonuç', 
-      desc: '5 dakikada profesyonel CV\'niz hazır.' 
+      desc: '5 dakikada profesyonel CV&apos;niz hazır.' 
     },
     { 
       title: 'Ücretsiz Başlangıç', 
@@ -195,7 +194,7 @@ export default function HomePage() {
                 marginBottom: '1.5rem',
                 backdropFilter: 'blur(10px)'
               }}>
-                ✨ Türkiye'nin #1 CV Oluşturma Platformu
+                ✨ Türkiye&apos;nin #1 CV Oluşturma Platformu
               </div>
               
               {/* Main Title */}
@@ -220,8 +219,8 @@ export default function HomePage() {
                 opacity: 0.9,
                 maxWidth: '500px'
               }}>
-                Profesyonel CV'niz ile iş görüşmelerine çağrılma şansınızı %73 artırın. 
-                Dakikalar içinde etkileyici CV'nizi oluşturun.
+                Profesyonel CV&apos;niz ile iş görüşmelerine çağrılma şansınızı %73 artırın. 
+                Dakikalar içinde etkileyici CV&apos;nizi oluşturun.
               </p>
               
               {/* CTA Buttons */}
@@ -373,7 +372,7 @@ export default function HomePage() {
                       marginBottom: '8px',
                       borderBottom: '1px solid #e5e7eb',
                       paddingBottom: '4px'
-                    }}>DENEYIM</div>
+                    }}>DENEYİM</div>
                     <div style={{ height: '8px', background: '#f3f4f6', borderRadius: '4px', marginBottom: '4px', width: '90%' }} />
                     <div style={{ height: '8px', background: '#f3f4f6', borderRadius: '4px', marginBottom: '4px', width: '70%' }} />
                     <div style={{ height: '8px', background: '#f3f4f6', borderRadius: '4px', marginBottom: '4px', width: '100%' }} />
@@ -409,15 +408,15 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+          
+          {/* Add keyframes animation */}
+          <style jsx>{`
+            @keyframes float {
+              0%, 100% { transform: translateY(0px); }
+              50% { transform: translateY(-20px); }
+            }
+          `}</style>
         </div>
-
-        {/* Add keyframes animation */}
-        <style jsx>{`
-          @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-          }
-        `}</style>
       </section>
 
       {/* Features Section */}
@@ -458,7 +457,7 @@ export default function HomePage() {
               Nasıl Çalışır?
             </h2>
             <p className="text-xl text-gray-600">
-              3 basit adımda profesyonel CV'niz hazır!
+              3 basit adımda profesyonel CV&apos;niz hazır!
             </p>
           </div>
 
@@ -477,7 +476,7 @@ export default function HomePage() {
               {
                 step: 3,
                 title: 'İndirin',
-                desc: 'CV\'nizi PDF formatında indirin ve iş başvurularınızda kullanın.'
+                desc: 'CV&apos;nizi PDF formatında indirin ve iş başvurularınızda kullanın.'
               }
             ].map((item, index) => (
               <div key={index} className="text-center">
@@ -533,7 +532,7 @@ export default function HomePage() {
                       />
                     ))}
                   </div>
-                  <p className="text-gray-600 mb-4">"{testimonial.content}"</p>
+                  <p className="text-gray-600 mb-4">&quot;{testimonial.content}&quot;</p>
                   <div>
                     <div className="font-semibold text-gray-900">{testimonial.name}</div>
                     <div className="text-sm text-gray-500">{testimonial.role}</div>
@@ -551,7 +550,7 @@ export default function HomePage() {
           <div className="grid grid-cols-2" style={{ alignItems: 'center', gap: '4rem' }}>
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                Neden Binlerce Kişi CVerly'i Tercih Ediyor?
+                Neden Binlerce Kişi CVerly&apos;i Tercih Ediyor?
               </h2>
               <div className="space-y-4">
                 {benefits.map((item, index) => (
@@ -580,7 +579,7 @@ export default function HomePage() {
             }}>
               <h3 className="text-2xl font-bold mb-4">Hemen Başlayın!</h3>
               <p className="mb-6" style={{ color: 'rgba(255,255,255,0.9)' }}>
-                Profesyonel CV'nizi oluşturmak için sadece birkaç dakika ayırın.
+                Profesyonel CV&apos;nizi oluşturmak için sadece birkaç dakika ayırın.
               </p>
               <Link href="/templates" className="btn btn-lg" style={{ background: 'white', color: '#667eea' }}>
                 <FileText style={{ width: '1.25rem', height: '1.25rem' }} />
@@ -625,7 +624,7 @@ export default function HomePage() {
             Hayalinizdeki İşe Bir Adım Daha Yakın!
           </h2>
           <p className="text-xl mb-8" style={{ color: '#bfdbfe', maxWidth: '32rem', margin: '0 auto 2rem' }}>
-            Profesyonel CV'niz ile iş görüşmelerine çağrılma şansınızı %73 artırın.
+            Profesyonel CV&apos;niz ile iş görüşmelerine çağrılma şansınızı %73 artırın.
           </p>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link href="/templates" className="btn btn-lg" style={{ background: 'white', color: '#2563eb' }}>
@@ -637,7 +636,7 @@ export default function HomePage() {
             </Link>
           </div>
           <p className="text-sm mt-4" style={{ color: '#bfdbfe' }}>
-            ✨ Kredi kartı gerektirmez • 🚀 5 dakikada hazır • 💎 Profesyonel sonuç
+            ✨ Kredi kartı gerekmez &bull; 🚀 5 dakikada hazır &bull; 💎 Profesyonel sonuç
           </p>
         </div>
       </section>

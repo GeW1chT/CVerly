@@ -7,10 +7,7 @@ import {
   ArrowLeft, 
   Download, 
   Edit3, 
-  Share2, 
   Eye,
-  Calendar,
-  User,
   FileText
 } from 'lucide-react';
 
@@ -154,7 +151,7 @@ export default function CVPreview({ params }: { params: { id: string } }) {
             fontWeight: '500'
           }}>
             <ArrowLeft style={{ width: '1rem', height: '1rem' }} />
-            Dashboard'a Dön
+            Dashboard&apos;a Dön
           </Link>
         </div>
       </div>
@@ -189,7 +186,7 @@ export default function CVPreview({ params }: { params: { id: string } }) {
                 fontSize: '0.875rem'
               }}>
                 <ArrowLeft style={{ width: '1rem', height: '1rem' }} />
-                Dashboard'a Dön
+                Dashboard&apos;a Dön
               </Link>
               <div style={{ width: '1px', height: '1.5rem', backgroundColor: '#e5e7eb' }} />
               <div>

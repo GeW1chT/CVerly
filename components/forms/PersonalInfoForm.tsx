@@ -78,7 +78,7 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
             Kişisel Bilgiler
           </CardTitle>
           <CardDescription>
-            CV'nizin temelini oluşturacak kişisel bilgilerinizi girin.
+            CV&apos;nizin temelini oluşturacak kişisel bilgilerinizi girin.
           </CardDescription>
         </CardHeader>
         <CardContent>

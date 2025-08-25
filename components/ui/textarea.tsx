@@ -1,10 +1,10 @@
-// components/ui/input.tsx
+// components/ui/textarea.tsx
 "use client";
 
-import React, { InputHTMLAttributes, forwardRef, useState } from 'react';
+import React, { TextareaHTMLAttributes, forwardRef, useState } from 'react';
 
-// Input için ana stil
-const inputStyles = {
+// Textarea için ana stil
+const textareaStyles = {
   display: 'block',
   width: '100%',
   padding: '0.75rem 1rem',
@@ -16,6 +16,8 @@ const inputStyles = {
   borderRadius: '0.5rem',
   transition: 'border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out',
   outline: 'none',
+  minHeight: '100px',
+  resize: 'vertical' as 'vertical',
 };
 
 // Odaklanma anındaki stil
@@ -36,22 +38,21 @@ const disabledStyles = {
   opacity: '0.6',
 };
 
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {}
+interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {}
 
-export const Input = forwardRef<HTMLInputElement, InputProps>(
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, style, disabled, ...props }, ref) => {
     const [isFocused, setIsFocused] = useState(false);
     
     const combinedStyles = {
-      ...inputStyles,
+      ...textareaStyles,
       ...(isFocused && focusStyles),
       ...(disabled && disabledStyles),
       ...style,
     };
 
     return (
-      <input
-        type="text"
+      <textarea
         ref={ref}
         style={combinedStyles}
         className={className}
@@ -63,4 +64,4 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     );
   }
 );
-Input.displayName = "Input";
+Textarea.displayName = "Textarea";

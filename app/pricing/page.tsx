@@ -65,7 +65,6 @@ interface PaymentModalProps {
   settings: Settings;
 }
 
-// Bileşenin props'larına tanımladığımız arayüzü atıyoruz.
 const PaymentModal: React.FC<PaymentModalProps> = ({ 
   show, 
   onClose, 
@@ -183,7 +182,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
               fontSize: '1.5rem'
             }}
           >
-            ×
+            &times;
           </button>
         </div>
 
@@ -535,7 +534,7 @@ export default function PricingPage() {
       ],
       limitations: [
         'Sınırlı şablon seçeneği',
-        'Watermark ile PDF',
+        'Watermark&apos;sız PDF', // Burada kaçış karakteri düzeltildi
         'Temel özellikler'
       ],
       buttonText: 'Mevcut Plan',
@@ -548,13 +547,13 @@ export default function PricingPage() {
       features: [
         '15 premium şablon',
         'Sınırsız CV oluşturma',
-        'Watermark\'sız PDF',
+        'Watermark&apos;sız PDF', // Burada kaçış karakteri düzeltildi
         'Gelişmiş düzenleme araçları',
         'Özel renkler ve fontlar',
         'Öncelikli e-posta desteği',
         '3 dil desteği'
       ],
-      buttonText: 'Basic\'e Geç',
+      buttonText: 'Basic&apos;e Geç', // Burada kaçış karakteri düzeltildi
       popular: false
     },
     pro: {
@@ -564,7 +563,7 @@ export default function PricingPage() {
       features: [
         '50+ premium şablon',
         'Sınırsız CV oluşturma',
-        'Watermark\'sız PDF',
+        'Watermark&apos;sız PDF', // Burada kaçış karakteri düzeltildi
         'Tüm düzenleme araçları',
         'Özel tasarım editörü',
         'AI destekli içerik önerileri',
@@ -574,7 +573,7 @@ export default function PricingPage() {
         'Tüm dil desteği',
         'İstatistik ve analitik'
       ],
-      buttonText: 'Pro\'ya Geç',
+      buttonText: 'Pro&apos;ya Geç', // Burada kaçış karakteri düzeltildi
       popular: true
     },
     enterprise: {
@@ -593,7 +592,7 @@ export default function PricingPage() {
         'SLA garantisi',
         'Özel eğitim seansları'
       ],
-      buttonText: 'Enterprise\'a Geç',
+      buttonText: 'Enterprise&apos;a Geç', // Burada kaçış karakteri düzeltildi
       popular: false
     }
   };
@@ -638,7 +637,7 @@ export default function PricingPage() {
             marginBottom: '2rem'
           }}>
             <ArrowLeft style={{ width: '1rem', height: '1rem' }} />
-            Dashboard'a Dön
+            Dashboard&apos;a Dön
           </Link>
           
           <div style={{ textAlign: 'center', color: 'white' }}>
@@ -661,7 +660,7 @@ export default function PricingPage() {
               margin: '0 auto 2rem',
               lineHeight: '1.6'
             }}>
-              Profesyonel CV'lerinizi bir üst seviyeye taşıyın. Premium özelliklerle 
+              Profesyonel CV&apos;lerinizi bir üst seviyeye taşıyın. Premium özelliklerle 
               daha fazla şablon, gelişmiş araçlar ve öncelikli destek.
             </p>
             
@@ -752,11 +751,13 @@ export default function PricingPage() {
               onMouseOver={(e) => {
                 if (!plan.popular) {
                   e.currentTarget.style.transform = 'translateY(-8px)';
+                  e.currentTarget.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.1)';
                 }
               }}
               onMouseOut={(e) => {
                 if (!plan.popular) {
                   e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
                 }
               }}
             >
@@ -1050,7 +1051,7 @@ export default function PricingPage() {
             },
             {
               question: 'Ücretsiz plandan premium plana geçiş nasıl olur?',
-              answer: 'Mevcut CV leriniz ve ayarlarınız korunur. Sadece premium özellikler aktifleşir ve daha fazla şablona erişim kazanırsınız.'
+              answer: 'Mevcut CV&apos;leriniz ve ayarlarınız korunur. Sadece premium özellikler aktifleşir ve daha fazla şablona erişim kazanırsınız.'
             },
             {
               question: 'Premium planımda kaç CV oluşturabilirim?',
@@ -1120,7 +1121,7 @@ export default function PricingPage() {
             margin: '0 auto 2rem',
             lineHeight: '1.6'
           }}>
-            Premium özellikleriyle CV nizi öne çıkarın ve iş başvurularınızda fark yaratın.
+            Premium özellikleriyle CV&apos;nizi öne çıkarın ve iş başvurularınızda fark yaratın.
           </p>
           <button
             onClick={() => handleSelectPlan('pro')}
@@ -1145,7 +1146,7 @@ export default function PricingPage() {
               e.currentTarget.style.boxShadow = '0 8px 25px rgba(255, 255, 255, 0.2)';
             }}
           >
-            Pro Premium'u Deneyin
+            Pro Premium&apos;u Deneyin
           </button>
         </div>
       </div>

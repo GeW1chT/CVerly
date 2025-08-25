@@ -5,9 +5,9 @@ import React, { useState, useEffect } from 'react';
 import { User, Briefcase, GraduationCap, Eye, Award } from 'lucide-react';
 import SkillsForm from './components/SkillsForm';
 import SavedCVsManager from '@/components/SavedCVsManager';
-import { CVStorage } from '@/lib/storage';
+import { CVStorage, CVData } from '@/lib/storage';
 
-// CV Veri Yapısını Tanımlayan Interface'ler
+// Local type definitions
 interface PersonalInfo {
   firstName: string;
   lastName: string;
@@ -42,6 +42,7 @@ interface Education {
 }
 
 interface Skill {
+  id: string;
   name: string;
   level: number;
 }
@@ -57,7 +58,7 @@ interface FullCVData {
 }
 
 interface StepProps {
-  data: any; // Bu alt bileşenler için şimdilik 'any' bırakıyorum, çünkü veri tipleri duruma göre değişiyor.
+  data: any;
   onUpdate: (data: any) => void;
   onNext: () => void;
   onPrev: () => void;
@@ -645,7 +646,7 @@ const SkillsStep = ({ data, onUpdate, onNext, onPrev }: StepProps) => {
   );
 };
 
-const PreviewStep = ({ cvData, onPrev }: { cvData: FullCVData, onPrev: () => void }) => {
+const PreviewStep = ({ cvData, onPrev }: { cvData: CVData, onPrev: () => void }) => {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const downloadPDF = async () => {
@@ -657,7 +658,7 @@ const PreviewStep = ({ cvData, onPrev }: { cvData: FullCVData, onPrev: () => voi
         return;
       }
 
-      const generateSimplePDF = (cvData: FullCVData): void => {
+      const generateSimplePDF = (cvData: CVData): void => {
         const { personalInfo, experience, education, skills } = cvData;
         
         const htmlContent = `
@@ -761,25 +762,25 @@ const PreviewStep = ({ cvData, onPrev }: { cvData: FullCVData, onPrev: () => voi
             </head>
             <body>
               <div class="header">
-                <h1 class="name">${personalInfo?.firstName || ''} ${personalInfo?.lastName || ''}</h1>
-                <p class="title">${personalInfo?.title || ''}</p>
+                <h1 class="name">${cvData.personalInfo?.firstName || ''} ${cvData.personalInfo?.lastName || ''}</h1>
+                <p class="title">${cvData.personalInfo?.title || ''}</p>
                 <div class="contact">
-                  <p>${personalInfo?.email || ''} | ${personalInfo?.phone || ''}</p>
-                  <p>${personalInfo?.location || ''}</p>
+                  <p>${cvData.personalInfo?.email || ''} | ${cvData.personalInfo?.phone || ''}</p>
+                  <p>${cvData.personalInfo?.location || ''}</p>
                 </div>
               </div>
 
-              ${personalInfo?.summary ? `
+              ${cvData.personalInfo?.summary ? `
                 <div class="section">
                   <h2 class="section-title">ÖZET</h2>
-                  <p>${personalInfo.summary}</p>
+                  <p>${cvData.personalInfo.summary}</p>
                 </div>
               ` : ''}
 
-              ${experience && experience.length > 0 ? `
+              ${cvData.experience && cvData.experience.length > 0 ? `
                 <div class="section">
                   <h2 class="section-title">İŞ DENEYİMİ</h2>
-                  ${experience.map((exp: Experience) => `
+                  ${cvData.experience.map((exp: Experience) => `
                     <div class="experience-item">
                       <div class="experience-header">
                         <div>
@@ -796,10 +797,10 @@ const PreviewStep = ({ cvData, onPrev }: { cvData: FullCVData, onPrev: () => voi
                 </div>
               ` : ''}
 
-              ${education && education.length > 0 ? `
+              ${cvData.education && cvData.education.length > 0 ? `
                 <div class="section">
                   <h2 class="section-title">EĞİTİM</h2>
-                  ${education.map((edu: Education) => `
+                  ${cvData.education.map((edu: Education) => `
                     <div class="experience-item">
                       <div class="experience-header">
                         <div>
@@ -817,11 +818,11 @@ const PreviewStep = ({ cvData, onPrev }: { cvData: FullCVData, onPrev: () => voi
                 </div>
               ` : ''}
 
-              ${skills && skills.length > 0 ? `
+              ${cvData.skills && cvData.skills.length > 0 ? `
                 <div class="section">
                   <h2 class="section-title">BECERİLER</h2>
                   <div class="skills-section">
-                    ${skills.map((skill: any) => `
+                    ${cvData.skills.map((skill: Skill) => `
                       <div class="skill-item">
                         ${skill.name}
                         <span class="skill-level">${'★'.repeat(skill.level)}</span>
@@ -1193,11 +1194,13 @@ const PreviewStep = ({ cvData, onPrev }: { cvData: FullCVData, onPrev: () => voi
 
 export default function CVBuilderPage() {
   const [currentStep, setCurrentStep] = useState(0);
-  const [cvData, setCvData] = useState<FullCVData>({
-    personalInfo: null,
+  const [cvData, setCvData] = useState<CVData>({
+    personalInfo: { firstName: '', lastName: '', title: '', email: '', phone: '', location: '', summary: '' },
     experience: [],
     education: [],
-    skills: []
+    skills: [],
+    lastModified: new Date().toISOString(),
+    version: '1.0'
   });
   const [currentCVId, setCurrentCVId] = useState<string | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -1238,7 +1241,7 @@ export default function CVBuilderPage() {
 
   // CV verilerinde değişiklik olduğunda otomatik kaydet
   useEffect(() => {
-    const hasData = cvData.personalInfo || 
+    const hasData = cvData.personalInfo?.firstName || 
                     (cvData.experience && cvData.experience.length > 0) || 
                     (cvData.education && cvData.education.length > 0) || 
                     (cvData.skills && cvData.skills.length > 0);
@@ -1246,13 +1249,7 @@ export default function CVBuilderPage() {
     if (hasData) {
       // Debounce ile 3 saniye sonra otomatik kaydet
       const timer = setTimeout(() => {
-        // Hata çözümü: autoSave'e göndermeden önce gerekli alanları ekle
-        const dataToSave = {
-          ...cvData,
-          lastModified: new Date().toISOString(),
-          version: '1.0' // Uygulamanızın versiyon numarası olabilir
-        };
-        CVStorage.autoSave(dataToSave);
+        CVStorage.autoSave(cvData);
       }, 3000);
 
       setHasUnsavedChanges(true);
@@ -1301,7 +1298,7 @@ export default function CVBuilderPage() {
   };
 
   // CV yükleme handler
-  const handleLoadCV = (data: any) => {
+  const handleLoadCV = (data: CVData) => {
     setCvData(data);
     setCurrentStep(0); // İlk adıma dön
     setHasUnsavedChanges(false);
@@ -1509,7 +1506,7 @@ export default function CVBuilderPage() {
             textAlign: 'center'
           }}>
             <div className="text-2xl font-bold text-blue-600">
-              {cvData.personalInfo ? '✓' : '○'}
+              {cvData.personalInfo?.firstName ? '✓' : '○'}
             </div>
             <div className="text-sm text-gray-600">Kişisel Bilgiler</div>
           </div>
